@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { Button } from '@/components/buttons'
 </script>
 
@@ -34,4 +34,4 @@ import { Button } from '@/components/buttons'
   letter-spacing: 0.1em;
   text-transform: none;
 }
-</style>
+</style> -->

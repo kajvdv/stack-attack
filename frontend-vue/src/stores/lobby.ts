@@ -4,7 +4,7 @@ import type { LobbyCreate, LobbyResponse } from '@/types/lobby'
 import { useApi } from '@/plugins/client'
 
 export const useLobbyStore = defineStore('lobby', () => {
-  const lobby = ref(null)
+  const lobby = ref<any | null>(null)
   const api = useApi()
   async function create(config: LobbyCreate) {
     const response: LobbyResponse = await api.lobby.createLobby(config)

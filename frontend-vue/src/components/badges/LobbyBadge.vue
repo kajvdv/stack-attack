@@ -5,6 +5,7 @@ const { color } = defineProps<{
 const variant = {
   red: 'bg-(--accent-light) text-(--accent)',
   green: 'bg-(--green-light) text-(--green)',
+  ghost: '',
 }
 </script>
 

@@ -7,11 +7,16 @@ import App from './App.vue'
 import router from './router'
 import { createApi } from './plugins/client.ts'
 import api from '@/api'
+import mockApi from '@/api/mock'
 
 const app = createApp(App)
 
 app.use(createPinia())
-app.use(createApi(api))
+if (import.meta.env.PROD) {
+  app.use(createApi(api))
+} else {
+  app.use(createApi(mockApi))
+}
 app.use(router)
 
 app.mount('#app')
