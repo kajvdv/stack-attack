@@ -25,7 +25,8 @@ export const useLobbyStore = defineStore('lobby', () => {
     if (!token) {
       return { name: '', lobby: '' }
     }
-    const { sub: name, lobby, exp } = JSON.parse(atob(token.split('.')[1]))
+    const parts = token.split('.')
+    const { sub: name, lobby, exp } = JSON.parse(atob(parts.at(1) ?? ''))
     return { name, lobby }
   })
   const players = computed<string[]>(() => lobby.value?.players ?? [])

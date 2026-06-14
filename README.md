@@ -32,4 +32,6 @@ pytest
 ## Run
 `docker compose up`
 
+Graceful reloads can then be conducted via `docker compose exec -w /etc/caddy frontend caddy reload`.
+
 # Deployment
