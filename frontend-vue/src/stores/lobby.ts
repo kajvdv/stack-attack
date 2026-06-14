@@ -16,7 +16,15 @@ export const useLobbyStore = defineStore('lobby', () => {
     lobby.value = response
   }
 
+  const currentSession = computed(() => {
+    const token = api.lobby.getSessionToken()
+    if (!token) {
+      return { name: '', lobby: '' }
+    }
+    const { sub: name, lobby, exp } = JSON.parse(atob(token.split('.')[1]))
+    return { name, lobby }
+  })
   const players = computed<string[]>(() => lobby.value?.players ?? [])
   const code = computed<string>(() => lobby.value?.id ?? '')
-  return { players, code, create, getLobby }
+  return { players, code, currentSession, create, getLobby }
 })

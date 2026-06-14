@@ -30,7 +30,11 @@ if (lobbyStore.code === '' && route.query.code) {
       <div class="w-1.5 h-1.5 bg-green-600 rounded-full shrink-0 animate-pulse"></div>
       Wachten op spelers…
     </div>
-    <PlayerList :data="lobbyStore.players" :max-players="4"></PlayerList>
+    <PlayerList
+      :own="lobbyStore.currentSession.name"
+      :data="lobbyStore.players"
+      :max-players="4"
+    ></PlayerList>
     <div class="text-xs text-(--ink-dim) text-center tracking-widest italic pt-2.5 pb-1">
       Even gedult…<br />
       Het spel begint zodra de lobby vol is.

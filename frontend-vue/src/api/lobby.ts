@@ -15,3 +15,8 @@ export async function getLobby(code: string) {
   const response = await fetch(`/api/lobbies/${code}`)
   return await response.json()
 }
+
+export function getSessionToken(): string | null {
+  console.log(document.cookie.split(';'))
+  return ''
+}

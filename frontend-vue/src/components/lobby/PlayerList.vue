@@ -3,8 +3,9 @@ import { LobbyBadge } from '../badges'
 import { PlayerItem, PendingItem } from '.'
 import type { LobbyPlayer } from '@/types/lobby'
 
-const { data, maxPlayers } = defineProps<{
+const { data, own, maxPlayers } = defineProps<{
   data: string[]
+  own: string
   maxPlayers: number
 }>()
 </script>
@@ -18,7 +19,7 @@ const { data, maxPlayers } = defineProps<{
     <PlayerItem
       v-for="(player, index) in data"
       :title="player"
-      description="is gejoint"
+      :description="own == player ? 'JIJ' : 'is gejoint'"
       :border="index < maxPlayers - 1"
     >
       <LobbyBadge color="green">Klaar</LobbyBadge>
