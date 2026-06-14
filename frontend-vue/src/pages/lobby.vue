@@ -9,8 +9,8 @@ const route = useRoute()
 const lobbyStore = useLobbyStore()
 if (lobbyStore.code === '' && route.query.code) {
   const code = route.query.code as string
-
-  if (lobbyStore.currentSession.name == '') {
+  const session = lobbyStore.currentSession
+  if (session.name == '' || session.lobby !== code) {
     let username = null
     while (!username) {
       username = window.prompt('Enter your name:')
