@@ -21,7 +21,13 @@ describe('Lobby store', () => {
 
   test('creates new lobby.', async () => {
     await store.create({ size: 2, creator: 'player 1' })
-    expect(store.lobby).toBeTruthy()
-    expect(store.lobby.players).toHaveLength(1)
+    expect(store.players).toHaveLength(1)
+    expect(store.code).toBe('RRXJ')
+  })
+
+  test('get existing lobby', async () => {
+    await store.getLobby('RRXJ')
+    expect(store.players).toHaveLength(1)
+    expect(store.code).toBe('RRXJ')
   })
 })

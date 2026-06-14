@@ -10,3 +10,7 @@ export async function createLobby({ creator, size }: LobbyCreate) {
   })
   return await response.json()
 }
+
+export async function getLobby(code: string) {
+  return {}
+}

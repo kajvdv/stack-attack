@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { Card } from '@/components/card'
-import { LobbyBadge } from '@/components/badges'
-import { PlayerList, PlayerItem, PendingItem } from '@/components/lobby'
+import { PlayerList } from '@/components/lobby'
 import { useLobbyStore } from '@/stores/lobby'
-import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 const lobbyStore = useLobbyStore()
-
-const players = computed(() => (lobbyStore.lobby?.players ? lobbyStore.lobby?.players : []))
+if (lobbyStore.code === '' && route.query.code) {
+  const code = route.query.code as string
+  lobbyStore.getLobby(code)
+}
 </script>
 
 <template>
   <Card>
     <div class="flex justify-between items-center gap-8">
-      <div class="font-title text-3xl font-black tracking-widest text-(--ink)">HX41</div>
+      <div class="font-title text-3xl font-black tracking-widest text-(--ink)">
+        {{ lobbyStore.code }}
+      </div>
       <div
         class="flex-1 text-center max-w-20 tracking-widest text-xs rounded-lg border border-(--border) p-2"
       >
@@ -25,7 +30,7 @@ const players = computed(() => (lobbyStore.lobby?.players ? lobbyStore.lobby?.pl
       <div class="w-1.5 h-1.5 bg-green-600 rounded-full shrink-0 animate-pulse"></div>
       Wachten op spelers…
     </div>
-    <PlayerList :data="players" :max-players="4"></PlayerList>
+    <PlayerList :data="lobbyStore.players" :max-players="4"></PlayerList>
     <div class="text-xs text-(--ink-dim) text-center tracking-widest italic pt-2.5 pb-1">
       Even gedult…<br />
       Het spel begint zodra de lobby vol is.
