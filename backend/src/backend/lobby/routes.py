@@ -73,9 +73,20 @@ def get_current_lobby(
 
 
 @router.get("/{lobby_id}")
-def get_lobby_route(lobby_id: str, lobbies_crud: Lobbies = Depends()):
+def get_lobby_route(
+        request: Request,
+        lobby_id: str,
+        lobbies_crud: Lobbies = Depends()
+):
     lobby = lobbies_crud.get_lobby(lobby_id)
-    return lobby
+    return {
+        "url": urllib.parse.quote(f"{request.url_for("get_lobby_route", lobby_id=lobby_id)}", safe="/:"),
+        'id': lobby_id,
+        'size': len(lobby.players),
+        'capacity': lobby.capacity,
+        'creator': lobby.creator,
+        'players': [lobby.creator],
+    }
 
 
 @router.post('', response_model=GamePublic)

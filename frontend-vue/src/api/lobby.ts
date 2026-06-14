@@ -12,5 +12,6 @@ export async function createLobby({ creator, size }: LobbyCreate) {
 }
 
 export async function getLobby(code: string) {
-  return {}
+  const response = await fetch(`/api/lobbies/${code}`)
+  return await response.json()
 }
