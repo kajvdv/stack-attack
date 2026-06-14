@@ -16,6 +16,10 @@ export const useLobbyStore = defineStore('lobby', () => {
     lobby.value = response
   }
 
+  async function joinLobby(username: string, lobbyCode: string) {
+    await api.lobby.join(username, lobbyCode)
+  }
+
   const currentSession = computed(() => {
     const token = api.lobby.getSessionToken()
     if (!token) {
@@ -26,5 +30,5 @@ export const useLobbyStore = defineStore('lobby', () => {
   })
   const players = computed<string[]>(() => lobby.value?.players ?? [])
   const code = computed<string>(() => lobby.value?.id ?? '')
-  return { players, code, currentSession, create, getLobby }
+  return { players, code, currentSession, create, getLobby, joinLobby }
 })

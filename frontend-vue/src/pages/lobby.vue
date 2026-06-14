@@ -9,6 +9,15 @@ const route = useRoute()
 const lobbyStore = useLobbyStore()
 if (lobbyStore.code === '' && route.query.code) {
   const code = route.query.code as string
+
+  if (lobbyStore.currentSession.name == '') {
+    let username = null
+    while (!username) {
+      username = window.prompt('Enter your name:')
+    }
+    lobbyStore.joinLobby(username, code)
+  }
+
   lobbyStore.getLobby(code)
 }
 </script>

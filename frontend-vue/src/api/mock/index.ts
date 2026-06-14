@@ -3,8 +3,9 @@ import sessionToken from '@/../data/player-RRXJ.txt?raw'
 import type { Api } from '@/types/api'
 
 let session = true
-export function setSession(value: boolean) {
-  session = value
+let token = ''
+export function setToken(value: '') {
+  token = value
 }
 
 const api: Api = {
@@ -15,9 +16,12 @@ const api: Api = {
     async getLobby(code: string) {
       return { ...createLobbyResponse, id: code }
     },
+    async join(username: string, lobbyCode: string) {
+      token = sessionToken
+    },
     getSessionToken() {
-      if (session) {
-        return sessionToken
+      if (session && token !== '') {
+        return token
       } else {
         return null
       }

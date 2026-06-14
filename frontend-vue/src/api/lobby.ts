@@ -16,7 +16,24 @@ export async function getLobby(code: string) {
   return await response.json()
 }
 
+export async function join(username: string, lobbyCode: string) {
+  const response = await fetch(`/api/lobbies/${lobbyCode}/join`, {
+    method: 'post',
+    body: JSON.stringify({ username }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  return await response.json()
+}
+
 export function getSessionToken(): string | null {
-  console.log(document.cookie.split(';'))
-  return ''
+  const cookie = document.cookie
+    .split(';')
+    .find((cookie) => cookie.trim().startsWith('sessionToken'))
+  if (cookie) {
+    return cookie.split('=')[1] ?? null
+  } else {
+    return null
+  }
 }

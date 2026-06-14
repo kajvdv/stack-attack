@@ -3,9 +3,10 @@ import { useLobbyStore } from './lobby'
 import { createApp } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { createApi } from '@/plugins/client'
-import api, { setSession } from '@/api/mock'
+import api, { setToken } from '@/api/mock'
 
 beforeEach(() => {
+  setToken('')
   const app = createApp({})
   const pinia = createPinia()
   app.use(pinia)
@@ -31,14 +32,14 @@ describe('Lobby store', () => {
     expect(store.code).toBe('RRXJ')
   })
 
-  test('get sesion token', async () => {
+  test('get session token after joining', async () => {
+    await store.joinLobby('player 2', 'RRXJ')
     const { name, lobby } = store.currentSession
     expect(name).toBe('player')
     expect(lobby).toBe('RRXJ')
   })
 
   test('no session token', async () => {
-    setSession(false)
     const { name, lobby } = store.currentSession
     expect(name).toBe('')
     expect(lobby).toBe('')
