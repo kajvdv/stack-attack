@@ -17,9 +17,7 @@ function joinLobby() {
       </h2>
     </CardTitle>
     <RouterLink to="/new" v-slot="{ navigate, isActive }" custom>
-      <Button class="mb-2.5" type="ink"" @click="navigate"
-        >＋ &nbsp;Nieuwe lobby maken</Button
-      >
+      <Button class="mb-2.5" type="ink" @click="navigate">＋ &nbsp;Nieuwe lobby maken</Button>
     </RouterLink>
     <div class="flex gap-2.5 my-3.5 mx-0">
       <span

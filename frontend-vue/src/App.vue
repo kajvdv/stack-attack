@@ -2,15 +2,15 @@
 
 <template>
   <div class="page">
-    <RouterView/>
+    <RouterView />
   </div>
 </template>
 
 <style>
 .page {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 </style>
