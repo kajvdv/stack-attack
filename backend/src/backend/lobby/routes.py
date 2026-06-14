@@ -85,7 +85,7 @@ def get_lobby_route(
         'size': len(lobby.players),
         'capacity': lobby.capacity,
         'creator': lobby.creator,
-        'players': [lobby.creator],
+        'players': [p.name for p in lobby.players],
     }
 
 
@@ -103,7 +103,7 @@ async def create_lobby_route(
     await lobbies_crud.create_lobby(lobby_create, game)
     
     # Save config to restore lobby on startup
-    request.state.lobbies_create_parameters[lobby_create.name] = lobby_create
+    # request.state.lobbies_create_parameters[lobby_create.name] = lobby_create
     response.set_cookie("sessionToken", generate_token(lobby_create.creator, lobby_create.name))
     return {
         "url": urllib.parse.quote(f"{request.url_for("get_lobby_route", lobby_id=lobby_create.name)}", safe="/:"),
@@ -116,7 +116,7 @@ async def create_lobby_route(
 
 
 @router.post("/{lobby_id}/join")
-def register_user_route(
+async def register_user_route(
     # request: Request,
     response: Response,
     username: Annotated[str, Body(embed=True)],
@@ -126,6 +126,7 @@ def register_user_route(
 ):
     lobby = lobbies_crud.get_lobby(lobby_id)
     usernames = [p.name for p in lobby.players]
+    await lobby.connect(Player(username, NullConnection()))
     if sessionToken:
         username_cookie, lobby_name = decode_session_token(sessionToken)
         

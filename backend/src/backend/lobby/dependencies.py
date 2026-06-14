@@ -128,7 +128,10 @@ class Lobbies:
         return self.lobbies
 
     def get_lobby(self, lobby_name):
-        return self.lobbies[lobby_name]
+        try:
+            return self.lobbies[lobby_name]
+        except KeyError:
+            raise HTTPException(status_code=404, detail="Lobby not found.")
 
     async def create_lobby(self, lobby_create: LobbyCreate, game: Pesten):
         user = lobby_create.creator

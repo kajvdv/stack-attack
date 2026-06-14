@@ -1,5 +1,4 @@
-# from backend.cli import app as cli_app
-# from backend.main import app
+from fastapi.testclient import TestClient
 
 
 def get_testgame_config():
@@ -14,14 +13,14 @@ def test_create_game(client):
     assert client.get(f"/lobbies/{lobby['id']}").raise_for_status().json() == lobby
 
 
-# def test_game_public_after_first_player_connects(client):
-#     lobby = client.post("/lobbies", json=get_testgame_config()).json()
-#     with client.websocket_connect(f"/lobbies/{lobby['id']}/connect") as conn:
-#         assert client.get("/lobbies").json() == [lobby]
+def test_second_player_in_game_after_join(player_1: TestClient, player_2: TestClient):
+    lobby = player_1.post("/lobbies", json=get_testgame_config()).json()
+    player_2.post(f"/lobbies/{lobby['id']}/join", json={"username": "player 2"}).raise_for_status()
+    assert player_2.get(f"/lobbies/{lobby['id']}").json()['players'] == ["player 1", "player 2"]
 
 
 def test_server_responding_properply_on_wrong_code(client):
-    response = client.post("/lobbies/WRONG/join")
+    response = client.post("/lobbies/WRONG/join", json={'username': "player"})
     assert response.status_code == 404, response.json()
 
 def test_join_twice(client):

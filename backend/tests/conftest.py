@@ -17,6 +17,13 @@ def client():
     with TestClient(app) as c:
         yield c
 
+@pytest.fixture
+def player_1(client): # Depending on client for startup
+    return TestClient(app)
+
+@pytest.fixture
+def player_2(client): # Depending on client for startup
+    return TestClient(app)
 
 @pytest.fixture
 def runner():

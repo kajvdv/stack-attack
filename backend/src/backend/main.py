@@ -25,12 +25,8 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    lobbies_dir = os.environ['LOBBIES_DIR']
     lobbies = {}
     lobbies_create_parameters = {}
-    reloader = Reloader(lobbies_dir, lobbies_create_parameters)
-    logger.info('Loading lobbies from previous server process')
-    # await reloader.load_lobbies(lobbies)
     seed = int(os.environ["GAME_SEED"])
     app.state.rng = Random(seed)
     app.state.lobbies = lobbies
@@ -38,12 +34,6 @@ async def lifespan(app: FastAPI):
         'lobbies': lobbies,
         'lobbies_create_parameters': lobbies_create_parameters
     }
-    logger.info('Saving lobbies for next server process')
-    reloader.save_lobbies(lobbies)
-
-    # Save the lobbies on exit. Load them back via the admin endpoints whenever after the server startsup.
-    # The owner of the lobby can connect AI's they want.
-    # save_lobbies(lobbies, lobbies_create_parameters)
 
 
 app = FastAPI(lifespan=lifespan)

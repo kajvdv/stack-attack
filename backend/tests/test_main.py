@@ -72,7 +72,6 @@ def test_users_should_receive_same_websocket_url(clients):
 def test_main_happy_path(clients):
     user1, user2 = clients
     lobby = user1.post("/lobbies", json=TESTGAME).json()
-    # print(lobby)
     backend_url = urlsplit(lobby['url']).path + "/join"
     user2.post(backend_url, json={"username": "player 2"})
 
