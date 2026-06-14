@@ -31,3 +31,6 @@ def test_join_twice(client):
 
 def test_user_in_game_after_joining(client):
     ...
+
+def test_lobby_deleted_if_not_started_after_while(client):
+    ...
