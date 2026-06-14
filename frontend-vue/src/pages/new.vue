@@ -14,7 +14,7 @@ const size = ref(4)
 
 async function createLobby() {
   await lobbyStore.create({ creator: username.value, size: size.value })
-  router.push('/lobby')
+  router.push(`/lobby?code=${lobbyStore.code}`)
 }
 </script>
 
