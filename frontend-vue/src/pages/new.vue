@@ -4,15 +4,17 @@ import { Card } from '@/components/card'
 import { useLobbyStore } from '@/stores/lobby'
 import type { LobbyCreate } from '@/types/lobby'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const lobbyStore = useLobbyStore()
+const router = useRouter()
 
 const username = ref('')
 const size = ref(4)
 
-function createLobby() {
-  lobbyStore.create({ creator: username.value, size: size.value })
-  console.log('Creating lobby')
+async function createLobby() {
+  await lobbyStore.create({ creator: username.value, size: size.value })
+  router.push('/lobby')
 }
 </script>
 
@@ -60,19 +62,7 @@ function createLobby() {
           <option value="6">6 spelers</option>
         </select>
         <div class="text-xs text-(--ink-dim) mt-1 italic">2 – 6 spelers toegestaan.</div>
-        <RouterLink to="/lobby" v-slot="{ navigate }" custom>
-          <Button
-            @click="
-              () => {
-                createLobby()
-                navigate()
-              }
-            "
-            type="green"
-            class="mt-4"
-            >Maak lobby aan →</Button
-          >
-        </RouterLink>
+        <Button type="green" class="mt-4">Maak lobby aan →</Button>
       </div>
     </form>
   </Card>

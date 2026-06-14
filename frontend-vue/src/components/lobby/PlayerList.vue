@@ -4,7 +4,7 @@ import { PlayerItem, PendingItem } from '.'
 import type { LobbyPlayer } from '@/types/lobby'
 
 const { data, maxPlayers } = defineProps<{
-  data: LobbyPlayer[]
+  data: string[]
   maxPlayers: number
 }>()
 </script>
@@ -17,7 +17,7 @@ const { data, maxPlayers } = defineProps<{
     </div>
     <PlayerItem
       v-for="(player, index) in data"
-      :title="player.name"
+      :title="player"
       description="is gejoint"
       :border="index < maxPlayers - 1"
     >

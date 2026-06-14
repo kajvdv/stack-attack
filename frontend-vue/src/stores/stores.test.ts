@@ -22,5 +22,6 @@ describe('Lobby store', () => {
   test('creates new lobby.', async () => {
     await store.create({ size: 2, creator: 'player 1' })
     expect(store.lobby).toBeTruthy()
+    expect(store.lobby.players).toHaveLength(1)
   })
 })

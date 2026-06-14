@@ -2,14 +2,12 @@
 import { Card } from '@/components/card'
 import { LobbyBadge } from '@/components/badges'
 import { PlayerList, PlayerItem, PendingItem } from '@/components/lobby'
+import { useLobbyStore } from '@/stores/lobby'
+import { computed } from 'vue'
 
-const players = [
-  { name: 'Jaap' },
-  { name: 'Sander' },
-  { name: 'Lisa' },
-  // { name: 'Lisa' },
-  // { name: 'Karen' },
-]
+const lobbyStore = useLobbyStore()
+
+const players = computed(() => (lobbyStore.lobby?.players ? lobbyStore.lobby?.players : []))
 </script>
 
 <template>
