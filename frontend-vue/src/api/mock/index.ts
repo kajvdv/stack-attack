@@ -29,4 +29,6 @@ const api: Api = {
   },
 }
 
+export const lobby = api.lobby
+
 export default api

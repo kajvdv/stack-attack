@@ -1,4 +1,4 @@
-FROM python:3.12-slim AS prod
+FROM python:3.12-slim
 WORKDIR /code
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
