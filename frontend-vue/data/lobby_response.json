@@ -1,0 +1,8 @@
+{
+  "url": "http://localhost:8000/lobbies/RRXJ",
+  "id": "RRXJ",
+  "size": 1,
+  "capacity": 2,
+  "creator": "player",
+  "players": ["player"]
+}
