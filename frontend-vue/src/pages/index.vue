@@ -9,7 +9,7 @@ function joinLobby() {
 </script>
 
 <template>
-  <Card>
+  <Card class="max-w-xs">
     <CardTitle>
       <div class="text-2xl opacity-10 mb-2 text-(--ink) tracking-[0.2em]">♠ ♥ ♦ ♣</div>
       <h2 class="font-title text-3xl font-black text-(--ink) mb-1.5 uppercase">

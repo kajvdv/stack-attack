@@ -19,7 +19,7 @@ async function createLobby() {
 </script>
 
 <template>
-  <Card>
+  <Card class="max-w-xs">
     <RouterLink v-slot="{ navigate, isActive }" to="/" custom>
       <div class="mb-5">
         <a

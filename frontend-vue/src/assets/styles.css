@@ -5,7 +5,16 @@
   --font-title: 'Playfair Display', serif;
 }
 
+@theme inline {
+  --color-felt: var(--felt);
+  --color-felt-light: var(--felt-light);
+  --color-felt-line: var(--felt-line);
+}
+
 :root {
+  --felt: #1a2e1a;
+  --felt-light: #243324;
+  --felt-line: #2e4a2e;
   --cream: #f2ede4;
   --warm: #e8dfd0;
   --ink: #1c1812;

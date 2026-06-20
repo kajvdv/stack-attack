@@ -38,6 +38,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/board': RouteRecordInfo<
+      '/board',
+      '/board',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/lobby': RouteRecordInfo<
       '/lobby',
       '/lobby',
@@ -68,6 +75,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/index.vue': {
       routes:
         | '/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/board.vue': {
+      routes:
+        | '/board'
       views:
         | never
       pathParamNames:
