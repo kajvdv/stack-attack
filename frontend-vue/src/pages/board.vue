@@ -1,11 +1,21 @@
 <script setup lang="ts">
 import { PlayingCard, Hand } from '@/components/board';
+import type { Card } from '@/types/board';
+
+const cards: Card[] = [
+  {value: "king", suit: "spades"},
+  {value: "king", suit: "spades"},
+  {value: "king", suit: "spades"},
+  {value: "king", suit: "spades"},
+  {value: "king", suit: "spades"},
+  {value: "queen", suit: "spades"},
+]
 </script>
 
 <template>
   <div class="grid grid-cols-3 gap-6 w-full h-screen bg-felt border border-felt-line p-6">
     <div class="col-span-3 rounded-2xl p-5 text-white flex">
-      <Hand/>
+      <Hand :cards="cards"/>
     </div>
     <div class=" grid grid-cols-1 col-start-2">
       <!-- Het middenstuk -->
@@ -16,7 +26,7 @@ import { PlayingCard, Hand } from '@/components/board';
     </div>
     <!-- De eigen hand -->
     <div class="col-span-3 rounded-2xl p-5 text-white flex">
-      <Hand/>
+      <Hand :cards="cards"/>
     </div>
   </div>
 </template>
