@@ -1,10 +1,13 @@
-import { test as base, expect } from 'vitest'
+import { test as base, expect, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import mockClient from '@/api/mock'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 import { createApp } from 'vue'
 import { createApi } from '@/plugins/client'
+
+base.beforeEach(() => {
+  vi.resetModules()
+})
 
 export const test = base
   .extend('pinia', () => {
@@ -19,7 +22,8 @@ export const test = base
     })
     return router
   })
-  .extend('client', () => {
+  .extend('client', async () => {
+    const mockClient = await import('@/api/mock')
     return mockClient
   })
   .extend('app', ({ pinia, router, client }) => {

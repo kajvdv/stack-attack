@@ -15,5 +15,10 @@ export const useGameStore = defineStore('game', () => {
     })
   }
 
-  return { game, connect, send }
+  async function play(cardIndex: number) {
+    console.log('calling send')
+    await send('')
+  }
+
+  return { game, connect, play }
 })

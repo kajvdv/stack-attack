@@ -3,5 +3,3 @@
 import * as lobby from './lobby'
 
 export { lobby }
-
-export default { lobby }
