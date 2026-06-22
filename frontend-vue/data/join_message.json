@@ -1,0 +1,21 @@
+{
+  "topcard": {
+    "suit": "hearts",
+    "value": "2"
+  },
+  "previous_topcard": null,
+  "can_draw": true,
+  "choose_suit": false,
+  "draw_count": 0,
+  "current_player": "player 1",
+  "otherPlayers": {
+    "player 2": 1
+  },
+  "hand": [
+    {
+      "suit": "hearts",
+      "value": "2"
+    }
+  ],
+  "message": "player 1 joined the game"
+}

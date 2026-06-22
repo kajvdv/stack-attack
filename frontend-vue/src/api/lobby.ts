@@ -37,3 +37,9 @@ export function getSessionToken(): string | null {
     return null
   }
 }
+
+export async function connect(
+  onReceive: (game: object) => Promise<void>,
+): Promise<(msg: string) => void> {}
+
+export async function getJoinedGame(): {}
