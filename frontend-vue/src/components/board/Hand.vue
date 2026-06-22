@@ -9,6 +9,11 @@ const { cards } = defineProps<{
 
 <template>
   <div class="flex flex-row justify-center max-w-fit m-auto">
-    <PlayingCard v-for="(card, index) in cards" v-bind="card" :class="{ '-ml-30': index !== 0 }" />
+    <PlayingCard
+      class="relative hover:-top-10 transistion-[top]"
+      v-for="(card, index) in cards"
+      v-bind="card"
+      :class="{ '-ml-30': index !== 0 }"
+    />
   </div>
 </template>

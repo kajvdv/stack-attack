@@ -19,7 +19,7 @@ const topCard = { value: 'queen', suit: 'hearts' }
 <template>
   <div class="grid grid-cols-3 gap-6 w-full h-screen bg-felt border border-felt-line p-6">
     <div class="col-span-3 rounded-2xl p-5 text-white flex">
-      <Hand :cards="cards" />
+      <Hand class="pointer-events-none" :cards="cards" />
     </div>
     <div class="grid grid-cols-1 col-start-2">
       <!-- Het middenstuk -->
