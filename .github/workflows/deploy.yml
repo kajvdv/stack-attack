@@ -50,7 +50,7 @@ jobs:
           script: |
             cd ${{ secrets.APP_DIR }}
             git pull
-            docker-compose stop
-            docker-compose rm -f
+            docker compose stop
+            docker compose rm -f
             docker compose pull
             docker compose up -d
