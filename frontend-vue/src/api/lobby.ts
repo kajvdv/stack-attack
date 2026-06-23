@@ -40,6 +40,8 @@ export function getSessionToken(): string | null {
 
 export async function connect(
   onReceive: (game: object) => Promise<void>,
-): Promise<(msg: string) => void> {}
+): Promise<(msg: string) => Promise<void>> {
+  return async (_msg: string) => {}
+}
 
-export async function getJoinedGame(): {}
+export async function getJoinedGame() {}

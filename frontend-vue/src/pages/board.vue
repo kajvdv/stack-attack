@@ -14,6 +14,7 @@ const cards: Card[] = [
   { value: 'queen', suit: 'spades' },
 ]
 const topCard = { value: 'queen', suit: 'hearts' }
+gameStore.connect()
 </script>
 
 <template>

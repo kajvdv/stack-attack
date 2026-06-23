@@ -1,6 +1,8 @@
 import { test, expect } from './setup'
 import { describe, vi } from 'vitest'
+import { mount } from '@vue/test-utils'
 import { useGameStore } from '@/stores/game'
+import { Hand, PlayingCard } from '@/components/board'
 
 describe('Gamestore', () => {
   test('connects with lobby 1234', async ({ pinia, router, app }) => {
@@ -16,14 +18,18 @@ describe('Gamestore', () => {
     })
   })
 
-  test('play a card', async ({ app, router, client }) => {
+  test('clicking on card in Hand sends message', async ({ client }) => {
     const spy = vi.spyOn(client.lobby, 'messageSpy')
-    router.push('/board')
-    await router.isReady()
+    const wrapper = mount(Hand, {
+      props: {
+        cards: [{ suit: 'spades', value: 'ace' }],
+      },
+    })
+    // Important to first mount the component before calling any Pinia stores.
     const gameStore = useGameStore()
-    await app.runWithContext(gameStore.connect)
-    await app.runWithContext(() => gameStore.play(0))
-
-    expect(spy).toHaveBeenCalledOnce()
+    await gameStore.connect()
+    const cards = wrapper.findAllComponents(PlayingCard)
+    await cards.at(0)?.trigger('click')
+    expect(spy).toHaveBeenCalledExactlyOnceWith('0')
   })
 })

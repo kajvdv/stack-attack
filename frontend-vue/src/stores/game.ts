@@ -6,7 +6,7 @@ import { useApi } from '@/plugins/client'
 export const useGameStore = defineStore('game', () => {
   const game = ref<Game | null>(null)
   const api = useApi()
-  let send: (msg: string) => void = (_msg: string) => {
+  let send: (msg: string) => Promise<void> = async (_msg: string) => {
     throw new Error('You should first call connect().')
   }
   async function connect() {
@@ -17,7 +17,7 @@ export const useGameStore = defineStore('game', () => {
 
   async function play(cardIndex: number) {
     console.log('calling send')
-    await send('')
+    await send(String(cardIndex))
   }
 
   return { game, connect, play }

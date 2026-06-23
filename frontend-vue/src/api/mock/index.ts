@@ -32,7 +32,9 @@ export const lobby = {
   async connect(onReceive: (game: object) => Promise<void>) {
     onReceive(joinMessage) // backend calling its send method
     return async (msg: string) => {
+      console.log('calling send')
       this.messageSpy(msg)
     }
   },
+  async getJoinedGame() {},
 }

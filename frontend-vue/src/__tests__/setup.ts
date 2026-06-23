@@ -1,13 +1,11 @@
 import { test as base, expect, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { createTestingPinia } from '@pinia/testing'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 import { createApp } from 'vue'
 import { createApi } from '@/plugins/client'
-
-base.beforeEach(() => {
-  vi.resetModules()
-})
+import { config } from '@vue/test-utils'
 
 export const test = base
   .extend('pinia', () => {
@@ -26,20 +24,30 @@ export const test = base
     const mockClient = await import('@/api/mock')
     return mockClient
   })
-  .extend('app', ({ pinia, router, client }) => {
+  .extend('app', () => {
     const app = createApp({
       setup: () => {
         // For no template error
         return () => {}
       },
     })
-    app.use(pinia)
-    app.use(createApi(client))
-    app.use(router)
-    const rootEl = document.createElement('div')
-    document.body.appendChild(rootEl)
-    app.mount(rootEl)
     return app
   })
+
+test.beforeEach(({ app, pinia, router, client }) => {
+  config.global.plugins = [createApi(client), createTestingPinia({ stubActions: false }), router]
+  // This for Pinia to work
+  app.use(pinia)
+  app.use(createApi(client))
+
+  // app.use(router)
+  // const rootEl = document.createElement('div')
+  // document.body.appendChild(rootEl)
+  // app.mount(rootEl)
+})
+
+test.afterEach(() => {
+  vi.resetModules()
+})
 
 export { expect }
