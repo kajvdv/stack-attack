@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { Game } from '@/types/game'
 import { useApi } from '@/plugins/client'
 
@@ -10,15 +10,22 @@ export const useGameStore = defineStore('game', () => {
     throw new Error('You should first call connect().')
   }
   async function connect() {
+    console.log('connection to app')
     send = await api.lobby.connect(async (receivedGame: object) => {
+      console.log('calling on receive')
       game.value = receivedGame as Game
     })
   }
 
   async function play(cardIndex: number) {
-    console.log('calling send')
     await send(String(cardIndex))
   }
 
-  return { game, connect, play }
+  async function draw() {
+    await send('-1')
+  }
+
+  const otherPlayers = computed(() => game.value?.otherPlayers ?? {})
+  const topcard = computed(() => game.value?.topcard ?? null)
+  return { connect, play, draw, otherPlayers, topcard }
 })

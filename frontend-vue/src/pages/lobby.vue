@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { Card } from '@/components/card'
 import { PlayerList } from '@/components/lobby'
+import { useGameStore } from '@/stores/game'
 import { useLobbyStore } from '@/stores/lobby'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 
 const lobbyStore = useLobbyStore()
+const gameStore = useGameStore()
 if (lobbyStore.code === '' && route.query.code) {
   const code = route.query.code as string
   const session = lobbyStore.currentSession
@@ -17,7 +20,7 @@ if (lobbyStore.code === '' && route.query.code) {
     }
     lobbyStore.joinLobby(username, code)
   }
-
+  gameStore.connect()
   lobbyStore.getLobby(code)
 }
 </script>

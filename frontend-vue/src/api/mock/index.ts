@@ -12,6 +12,9 @@ export const lobby = {
   messageSpy(_msg: string) {
     console.log('calling message spy')
   },
+  async sendMessage(game: object): Promise<void> {
+    throw new Error('First call connect')
+  },
 
   async createLobby() {
     return createLobbyResponse
@@ -30,7 +33,8 @@ export const lobby = {
     }
   },
   async connect(onReceive: (game: object) => Promise<void>) {
-    onReceive(joinMessage) // backend calling its send method
+    this.sendMessage = onReceive
+    // onReceive(joinMessage) // backend calling its send method
     return async (msg: string) => {
       console.log('calling send')
       this.messageSpy(msg)

@@ -13,11 +13,13 @@ export const test = base
     setActivePinia(pinia)
     return pinia
   })
-  .extend('router', () => {
+  .extend('router', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: routes,
     })
+    router.push('/')
+    await router.isReady()
     return router
   })
   .extend('client', async () => {

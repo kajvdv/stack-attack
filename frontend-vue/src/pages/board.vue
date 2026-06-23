@@ -2,6 +2,7 @@
 import { PlayingCard, Hand } from '@/components/board'
 import { useGameStore } from '@/stores/game'
 import type { Card } from '@/types/board'
+import { computed } from 'vue'
 
 const gameStore = useGameStore()
 
@@ -15,12 +16,19 @@ const cards: Card[] = [
 ]
 const topCard = { value: 'queen', suit: 'hearts' }
 gameStore.connect()
+
+const otherCards = computed(() => {
+  const otherCards = Object.entries(gameStore.otherPlayers).map(([playerName, cardCount]) => {
+    return Array(cardCount).fill({ value: '', suit: '' })
+  })
+  return otherCards
+})
 </script>
 
 <template>
   <div class="grid grid-cols-3 gap-6 w-full h-screen bg-felt border border-felt-line p-6">
     <div class="col-span-3 rounded-2xl p-5 text-white flex">
-      <Hand class="pointer-events-none" :cards="cards" />
+      <Hand class="pointer-events-none" :cards="otherCards[0] ?? []" />
     </div>
     <div class="grid grid-cols-1 col-start-2">
       <!-- Het middenstuk -->
