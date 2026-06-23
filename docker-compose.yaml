@@ -1,6 +1,7 @@
 name: stack-attack
 services:
   backend:
+    image: ghcr.io/kajvdv/stack-attack-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -10,6 +11,7 @@ services:
       - GAME_SEED=${GAME_SEED}
 
   frontend:
+    image: ghcr.io/kajvdv/stack-attack-frontend
     build:
       context: ./frontend-vue
       dockerfile: Dockerfile
