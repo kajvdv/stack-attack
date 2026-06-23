@@ -14,7 +14,9 @@ const { data, own, maxPlayers } = defineProps<{
   <div class="bg-(--warm) border border-(--border) rounded-xl overflow-hidden mb-3.5">
     <div class="flex justify-between py-2 px-3.5 border-b border-(--border) bg-(--cream)">
       <span class="text-xs tracking-widest uppercase text-(--ink-dim)">Spelers</span>
-      <span class="text-xs tracking-widest uppercase text-(--ink-dim)">3 / {{ maxPlayers }}</span>
+      <span class="text-xs tracking-widest uppercase text-(--ink-dim)"
+        >{{ data.length }} / {{ maxPlayers }}</span
+      >
     </div>
     <PlayerItem
       v-for="(player, index) in data"

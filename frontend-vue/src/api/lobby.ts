@@ -41,7 +41,17 @@ export function getSessionToken(): string | null {
 export async function connect(
   onReceive: (game: object) => Promise<void>,
 ): Promise<(msg: string) => Promise<void>> {
-  return async (_msg: string) => {}
+  const response = await fetch('/api/lobbies/current')
+  const { ws_url } = await response.json()
+  const ws = new WebSocket(ws_url)
+
+  ws.onmessage = (ev: MessageEvent) => {
+    onReceive(JSON.parse(ev.data))
+  }
+
+  return async (msg: string) => {
+    ws.send(msg)
+  }
 }
 
 export async function getJoinedGame() {}

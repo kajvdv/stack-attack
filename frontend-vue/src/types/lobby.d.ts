@@ -6,6 +6,7 @@ export interface LobbyCreate {
 export interface LobbyResponse {
   id: string
   players: string[]
+  capacity: number
 }
 
 export interface LobbyPlayer {

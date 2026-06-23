@@ -1,9 +1,12 @@
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
+import { ref, computed, watch } from 'vue'
+import { defineStore, storeToRefs } from 'pinia'
 import type { LobbyCreate, LobbyResponse } from '@/types/lobby'
 import { useApi } from '@/plugins/client'
+import { useGameStore } from './game'
 
 export const useLobbyStore = defineStore('lobby', () => {
+  const gameStore = useGameStore()
+  const { otherPlayers } = storeToRefs(gameStore)
   const lobby = ref<LobbyResponse | null>(null)
   const api = useApi()
   async function create(config: LobbyCreate) {
@@ -29,7 +32,12 @@ export const useLobbyStore = defineStore('lobby', () => {
     const { sub: name, lobby, exp } = JSON.parse(atob(parts.at(1) ?? ''))
     return { name, lobby }
   })
+
   const players = computed<string[]>(() => lobby.value?.players ?? [])
   const code = computed<string>(() => lobby.value?.id ?? '')
-  return { players, code, currentSession, create, getLobby, joinLobby }
+  const capacity = computed(() => lobby.value?.capacity ?? 0)
+  watch(otherPlayers, async () => {
+    await getLobby(lobby.value?.id ?? '')
+  })
+  return { players, code, currentSession, create, getLobby, joinLobby, capacity }
 })

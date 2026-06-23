@@ -20,9 +20,9 @@ if (lobbyStore.code === '' && route.query.code) {
     }
     lobbyStore.joinLobby(username, code)
   }
-  gameStore.connect()
   lobbyStore.getLobby(code)
 }
+gameStore.connect()
 </script>
 
 <template>
@@ -45,7 +45,7 @@ if (lobbyStore.code === '' && route.query.code) {
     <PlayerList
       :own="lobbyStore.currentSession.name"
       :data="lobbyStore.players"
-      :max-players="4"
+      :max-players="lobbyStore.capacity"
     ></PlayerList>
     <div class="text-xs text-(--ink-dim) text-center tracking-widest italic pt-2.5 pb-1">
       Even gedult…<br />
