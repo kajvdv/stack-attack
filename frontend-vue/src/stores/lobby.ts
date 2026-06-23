@@ -3,9 +3,11 @@ import { defineStore, storeToRefs } from 'pinia'
 import type { LobbyCreate, LobbyResponse } from '@/types/lobby'
 import { useApi } from '@/plugins/client'
 import { useGameStore } from './game'
+import { useRouter } from 'vue-router'
 
 export const useLobbyStore = defineStore('lobby', () => {
   const gameStore = useGameStore()
+  const router = useRouter()
   const { otherPlayers } = storeToRefs(gameStore)
   const lobby = ref<LobbyResponse | null>(null)
   const api = useApi()
@@ -38,6 +40,9 @@ export const useLobbyStore = defineStore('lobby', () => {
   const capacity = computed(() => lobby.value?.capacity ?? 0)
   watch(otherPlayers, async () => {
     await getLobby(lobby.value?.id ?? '')
+    if (lobby.value?.capacity === lobby.value?.players.length) {
+      await router.push('/board')
+    }
   })
   return { players, code, currentSession, create, getLobby, joinLobby, capacity }
 })

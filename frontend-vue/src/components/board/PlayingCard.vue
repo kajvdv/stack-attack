@@ -3,9 +3,9 @@ import type { Card } from '@/types/board';
 
 const {suit = "", value = ""} = defineProps<Card>()
 
-let src = "/src/assets/cards/back.png"
+let src = "/cards/back.png"
 if (suit && value) {
-  src =  `/src/assets/cards/${value}_of_${suit}.png`
+  src =  `/cards/${value}_of_${suit}.png`
 }
 </script>
 
