@@ -14,7 +14,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  server: {
+  preview: {
     proxy: {
       '^/api/.*/connect': {
         target: 'ws://localhost:8000',

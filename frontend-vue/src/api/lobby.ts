@@ -45,9 +45,11 @@ export async function connect(
       'Content-Type': 'application/json',
     },
   })
-  const { ws_url } = await response.json()
-  const ws = new WebSocket(ws_url)
+  const { ws_url, url } = await response.json()
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  const code = url.split('/').at(-1) ?? ''
 
+  const ws = new WebSocket(`${protocol}//${window.location.host}/api/lobbies/${code}/connect`)
   ws.onmessage = (ev: MessageEvent) => {
     onReceive(JSON.parse(ev.data))
   }
