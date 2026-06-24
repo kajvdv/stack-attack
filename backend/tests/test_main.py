@@ -75,11 +75,11 @@ def test_main_happy_path(clients):
     backend_url = urlsplit(lobby['url']).path + "/join"
     user2.post(backend_url, json={"username": "player 2"})
 
-    ws_url, _ = user1.get("/lobbies/current").json().values()
+    user1.get("/lobbies/current").json().values()
     
     with (
-        user1.websocket_connect(ws_url) as user1_ws,
-        user2.websocket_connect(ws_url) as user2_ws,
+        user1.websocket_connect(f"/lobbies/{lobby['id']}/connect") as user1_ws,
+        user2.websocket_connect(f"/lobbies/{lobby['id']}/connect") as user2_ws,
     ):
         print(json.dumps(user1_ws.receive_json(), indent=4))
         print(json.dumps(user2_ws.receive_json(), indent=4))

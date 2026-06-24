@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Protocol, Annotated
 import asyncio
 import logging
 import json
@@ -113,15 +113,21 @@ def create_game(
     game = Pesten(lobby_create.size, 8, cards, rules)
     return game
 
+
+def get_lobbies(request: Request):
+    return request.app.state.lobbies
+    
+
 tasks = set()
 class Lobbies:
     def __init__(
             self,
             request: Request,
+            lobbies: Annotated[dict[str, Lobby], Depends(get_lobbies)]
             # lobby_create: LobbyCreate,
             # user: str = Depends(get_current_user),
     ):
-        self.lobbies = request.app.state.lobbies
+        self.lobbies = lobbies
         # self.user = lobby_create.creator
 
     def get_lobbies(self):

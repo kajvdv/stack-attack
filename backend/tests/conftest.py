@@ -9,7 +9,8 @@ from backend.main import app
 
 @pytest.fixture(name="app")
 def app_fixture():
-    return app
+    yield app
+    app.dependency_overrides = {}
 
 
 @pytest.fixture
@@ -23,6 +24,10 @@ def player_1(client): # Depending on client for startup
 
 @pytest.fixture
 def player_2(client): # Depending on client for startup
+    return TestClient(app)
+
+@pytest.fixture
+def player_3(client): # Depending on client for startup
     return TestClient(app)
 
 @pytest.fixture

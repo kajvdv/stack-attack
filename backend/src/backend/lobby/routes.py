@@ -95,10 +95,19 @@ async def create_lobby_route(
         response: Response,
         lobby_create: LobbyCreate,
         # user: str = Depends(get_current_user),
+        sessionToken: str = Cookie(None),
         lobbies_crud: Lobbies = Depends(),
         game = Depends(create_game),
         # lobbies_create_parameters = Depends(get_lobbies_create_parameters)
 ):
+    if sessionToken:
+        # Delete user
+        username, lobby_name = decode_session_token(sessionToken)
+        old_lobby = lobbies_crud.get_lobby(lobby_name)
+        print("players in lobby", old_lobby.players)
+        player = old_lobby.get_player_by_name(username)
+        del player
+        print("players in lobby", old_lobby.players)
     lobby_create.name = ''.join(random.choices(string.ascii_uppercase, k=4))
     await lobbies_crud.create_lobby(lobby_create, game)
     
@@ -117,28 +126,17 @@ async def create_lobby_route(
 
 @router.post("/{lobby_id}/join", status_code=204)
 async def register_user_route(
-    # request: Request,
     response: Response,
     username: Annotated[str, Body(embed=True)],
-    sessionToken: str = Cookie(None),
     lobby_id: str = Path(),
     lobbies_crud: Lobbies = Depends(),
 ):
     lobby = lobbies_crud.get_lobby(lobby_id)
     usernames = [p.name for p in lobby.players]
-    await lobby.connect(Player(username, NullConnection()))
-    if sessionToken:
-        username_cookie, lobby_name = decode_session_token(sessionToken)
-        
-        assert lobby_name == lobby_id
-        assert username_cookie == username
-    elif username in usernames:
+    if username in usernames:
         raise HTTPException(status_code=409)
+    await lobby.connect(Player(username, NullConnection()))
     response.set_cookie("sessionToken", generate_token(username, lobby_id))
-    # return {
-    #     "registerUrl": "",
-    #     "websocketUrl": str(request.url_for("connect_to_lobby", lobby_name=lobby_id))
-    # }
 
 
 @router.delete('/{id}', response_model=LobbyResponse)
