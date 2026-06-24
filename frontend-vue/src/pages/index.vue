@@ -2,9 +2,16 @@
 import { Card, CardTitle } from '@/components/card'
 import { Button } from '@/components/buttons'
 import { TextInput } from '@/components/input/index.ts'
+import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+
+const router = useRouter()
+const code = ref('')
 
 function joinLobby() {
-  console.log('joining lobby')
+  if (code.value.length === 4) {
+    router.push(`/lobby?code=${code.value}`)
+  }
 }
 </script>
 
@@ -17,7 +24,9 @@ function joinLobby() {
       </h2>
     </CardTitle>
     <RouterLink to="/new" v-slot="{ navigate, isActive }" custom>
-      <Button class="mb-2.5" type="ink" @click="navigate">＋ &nbsp;Nieuwe lobby maken</Button>
+      <Button id="create-game-btn" class="mb-2.5" type="ink" @click="navigate"
+        >＋ &nbsp;Nieuwe lobby maken</Button
+      >
     </RouterLink>
     <div class="flex gap-2.5 my-3.5 mx-0">
       <span
@@ -26,8 +35,16 @@ function joinLobby() {
       >
     </div>
     <form @submit.prevent="joinLobby">
-      <TextInput name="code" class="mb-3.5" placeholder="Code"></TextInput>
-      <Button type="ghost" style="margin-bottom: 10px">→ &nbsp;Lobby joinen met code</Button>
+      <TextInput
+        id="join-game-input"
+        v-model="code"
+        name="code"
+        class="mb-3.5"
+        placeholder="Code"
+      ></TextInput>
+      <Button id="join-game-btn" type="ghost" style="margin-bottom: 10px"
+        >→ &nbsp;Lobby joinen met code</Button
+      >
     </form>
   </Card>
 </template>

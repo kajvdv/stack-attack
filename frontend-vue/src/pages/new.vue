@@ -37,6 +37,7 @@ async function createLobby() {
           >Jouw naam in dit spel</label
         >
         <input
+          id="username-input"
           v-model="username"
           class="w-full border box-border rounded-md py-2.5 px-3 text-sm text-(--ink) bg-(--cream) border-(--border) focus:border-(--border-focus) outline-0"
           name="username"
@@ -51,6 +52,7 @@ async function createLobby() {
           >Aantal spelers</label
         >
         <select
+          id="player-count-input"
           v-model="size"
           name="playerCount"
           class="w-full border box-border rounded-md py-2.5 px-3 text-sm text-(--ink) bg-(--cream) border-(--border) focus:border-(--border-focus) outline-0"
@@ -62,7 +64,7 @@ async function createLobby() {
           <option value="6">6 spelers</option>
         </select>
         <div class="text-xs text-(--ink-dim) mt-1 italic">2 – 6 spelers toegestaan.</div>
-        <Button type="green" class="mt-4">Maak lobby aan →</Button>
+        <Button id="confirm-game-btn" type="green" class="mt-4">Maak lobby aan →</Button>
       </div>
     </form>
   </Card>

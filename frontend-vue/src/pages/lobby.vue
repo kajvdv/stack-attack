@@ -28,7 +28,10 @@ gameStore.connect()
 <template>
   <Card class="max-w-xs">
     <div class="flex justify-between items-center gap-8">
-      <div class="font-title text-3xl font-black tracking-widest text-(--ink)">
+      <div
+        id="lobby-code-display"
+        class="font-title text-3xl font-black tracking-widest text-(--ink)"
+      >
         {{ lobbyStore.code }}
       </div>
       <div

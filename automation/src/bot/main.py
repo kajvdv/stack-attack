@@ -14,5 +14,17 @@ def startbrowser(port: int, user: str):
             break
 
 
+@app.command()
+def startbrowsers():
+    driver1 = start_browser(9001, "user1")
+    driver2 = start_browser(9002, "user2")
+    while True:
+        try:
+            _ = driver1.current_url
+            _ = driver2.current_url
+        except Exception:
+            break
+
+
 def main():
     app()

@@ -1,5 +1,9 @@
+<script setup lang="ts">
+const model = defineModel()
+</script>
+
 <template>
-  <input class="field-input text-center uppercase placeholder:text-center" />
+  <input v-model="model" class="field-input text-center uppercase placeholder:text-center" />
 </template>
 
 <style scoped>

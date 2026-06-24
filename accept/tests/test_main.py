@@ -26,14 +26,6 @@ def client():
     return Client(base_url="http://localhost:8000")
 
 
-@pytest.fixture(autouse=True)
-def reload_server():
-    import backend
-    yield
-    Path(backend.__file__).touch()
-    sleep(1)
-
-
 @pytest.fixture(params=[
     pytest.param("http", marks=[pytest.mark.http]),
     pytest.param("selenium", marks=[pytest.mark.selenium])
