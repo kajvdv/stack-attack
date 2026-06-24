@@ -160,6 +160,13 @@ class Lobby:
         except StopIteration as e:
             return None
         return player
+    
+    def delete_player(self, name: str):
+        self.players.pop(
+            self.players.index(
+                self.get_player_by_name(name)
+            )
+        )
         
     async def play_choose(self, player: Player, choose):
         # player = self.get_player_by_name(name)

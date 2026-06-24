@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, Form, Request, WebSocket, Response, Body
 from backend.token import generate_token, decode_token
 from pesten.lobby import Player, NullConnection
 from .schemas import LobbyCreate, LobbyResponse, Card, Registration
-from .dependencies import Lobbies, HumanConnection, create_game
+from .dependencies import Lobbies, HumanConnection, create_game, get_random_code
 
 from backend.game.schemas import GamePublic
 
@@ -98,17 +98,17 @@ async def create_lobby_route(
         sessionToken: str = Cookie(None),
         lobbies_crud: Lobbies = Depends(),
         game = Depends(create_game),
+        random_code = Depends(get_random_code)
         # lobbies_create_parameters = Depends(get_lobbies_create_parameters)
 ):
     if sessionToken:
         # Delete user
         username, lobby_name = decode_session_token(sessionToken)
         old_lobby = lobbies_crud.get_lobby(lobby_name)
-        print("players in lobby", old_lobby.players)
-        player = old_lobby.get_player_by_name(username)
-        del player
-        print("players in lobby", old_lobby.players)
-    lobby_create.name = ''.join(random.choices(string.ascii_uppercase, k=4))
+        old_lobby.delete_player(username)
+        if not old_lobby.players:
+            lobbies_crud.lobbies.pop(lobby_name)
+    lobby_create.name = random_code
     await lobbies_crud.create_lobby(lobby_create, game)
     
     # Save config to restore lobby on startup

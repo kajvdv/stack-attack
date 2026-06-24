@@ -2,6 +2,7 @@ from typing import Protocol, Annotated
 import asyncio
 import logging
 import json
+import string
 import random
 from random import Random
 
@@ -98,6 +99,10 @@ class HumanConnection:
 
 def get_randomizer(request: Request):
     return request.app.state.rng
+
+
+def get_random_code():
+    return ''.join(random.choices(string.ascii_uppercase, k=4))
 
 
 def create_game(
