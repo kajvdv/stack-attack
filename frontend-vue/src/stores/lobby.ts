@@ -7,8 +7,7 @@ import { useRouter } from 'vue-router'
 
 export const useLobbyStore = defineStore('lobby', () => {
   const gameStore = useGameStore()
-  const router = useRouter()
-  const { otherPlayers } = storeToRefs(gameStore)
+
   const lobby = ref<LobbyResponse | null>(null)
   const api = useApi()
   async function create(config: LobbyCreate) {
@@ -38,11 +37,5 @@ export const useLobbyStore = defineStore('lobby', () => {
   const players = computed<string[]>(() => lobby.value?.players ?? [])
   const code = computed<string>(() => lobby.value?.id ?? '')
   const capacity = computed(() => lobby.value?.capacity ?? 0)
-  watch(otherPlayers, async () => {
-    await getLobby(lobby.value?.id ?? '')
-    if (lobby.value?.capacity === lobby.value?.players.length) {
-      await router.push('/board')
-    }
-  })
   return { players, code, currentSession, create, getLobby, joinLobby, capacity }
 })

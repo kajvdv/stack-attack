@@ -3,6 +3,8 @@ import { Card } from '@/components/card'
 import { PlayerList } from '@/components/lobby'
 import { useGameStore } from '@/stores/game'
 import { useLobbyStore } from '@/stores/lobby'
+import { storeToRefs } from 'pinia'
+import { watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -10,6 +12,7 @@ const router = useRouter()
 
 const lobbyStore = useLobbyStore()
 const gameStore = useGameStore()
+const { otherPlayers } = storeToRefs(gameStore)
 if (lobbyStore.code === '' && route.query.code) {
   const code = route.query.code as string
   const session = lobbyStore.currentSession
@@ -23,6 +26,13 @@ if (lobbyStore.code === '' && route.query.code) {
   lobbyStore.getLobby(code)
 }
 gameStore.connect()
+
+watch(otherPlayers, async () => {
+  await lobbyStore.getLobby(lobbyStore.code)
+  if (lobbyStore.capacity === lobbyStore.players.length) {
+    await router.push('/board')
+  }
+})
 </script>
 
 <template>
