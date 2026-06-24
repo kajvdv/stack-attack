@@ -4,7 +4,7 @@ import { PlayerList } from '@/components/lobby'
 import { useGameStore } from '@/stores/game'
 import { useLobbyStore } from '@/stores/lobby'
 import { storeToRefs } from 'pinia'
-import { watch } from 'vue'
+import { watch, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -12,6 +12,7 @@ const router = useRouter()
 
 const lobbyStore = useLobbyStore()
 const gameStore = useGameStore()
+const counter = ref<number | null>(null)
 const { otherPlayers } = storeToRefs(gameStore)
 if (lobbyStore.code === '' && route.query.code) {
   const code = route.query.code as string
@@ -21,7 +22,9 @@ if (lobbyStore.code === '' && route.query.code) {
     while (!username) {
       username = window.prompt('Enter your name:')
     }
-    lobbyStore.joinLobby(username, code)
+    lobbyStore.joinLobby(username, code).then(() => {
+      gameStore.connect()
+    })
   }
   lobbyStore.getLobby(code)
 }
@@ -30,7 +33,14 @@ gameStore.connect()
 watch(otherPlayers, async () => {
   await lobbyStore.getLobby(lobbyStore.code)
   if (lobbyStore.capacity === lobbyStore.players.length) {
-    await router.push('/board')
+    counter.value = 5
+    setInterval(async () => {
+      if (!counter.value) {
+        await router.push('/board')
+      } else {
+        counter.value -= 1
+      }
+    }, 1000)
   }
 })
 </script>
@@ -60,7 +70,13 @@ watch(otherPlayers, async () => {
       :data="lobbyStore.players"
       :max-players="lobbyStore.capacity"
     ></PlayerList>
-    <div class="text-xs text-(--ink-dim) text-center tracking-widest italic pt-2.5 pb-1">
+    <div
+      v-if="counter"
+      class="text-xs text-(--ink-dim) text-center tracking-widest italic pt-2.5 pb-1"
+    >
+      Het spel begint over {{ counter }} seconden
+    </div>
+    <div v-else class="text-xs text-(--ink-dim) text-center tracking-widest italic pt-2.5 pb-1">
       Even gedult…<br />
       Het spel begint zodra de lobby vol is.
     </div>

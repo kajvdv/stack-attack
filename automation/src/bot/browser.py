@@ -15,4 +15,5 @@ def connect(port: int):
     options.debugger_address = f"127.0.0.1:{port}"
     driver = WebDriver(options)
     driver.implicitly_wait(1)
+    driver.delete_all_cookies()
     return driver

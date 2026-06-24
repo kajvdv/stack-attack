@@ -17,14 +17,13 @@ export async function getLobby(code: string) {
 }
 
 export async function join(username: string, lobbyCode: string) {
-  const response = await fetch(`/api/lobbies/${lobbyCode}/join`, {
+  await fetch(`/api/lobbies/${lobbyCode}/join`, {
     method: 'post',
     body: JSON.stringify({ username }),
     headers: {
       'Content-Type': 'application/json',
     },
   })
-  return await response.json()
 }
 
 export function getSessionToken(): string | null {
@@ -41,7 +40,11 @@ export function getSessionToken(): string | null {
 export async function connect(
   onReceive: (game: object) => Promise<void>,
 ): Promise<(msg: string) => Promise<void>> {
-  const response = await fetch('/api/lobbies/current')
+  const response = await fetch('/api/lobbies/current', {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
   const { ws_url } = await response.json()
   const ws = new WebSocket(ws_url)
 

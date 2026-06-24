@@ -10,11 +10,11 @@ export const useGameStore = defineStore('game', () => {
     throw new Error('You should first call connect().')
   }
   async function connect() {
-    console.log('connection to app')
-    send = await api.lobby.connect(async (receivedGame: object) => {
-      console.log('calling on receive')
-      game.value = receivedGame as Game
-    })
+    if (api.lobby.getSessionToken()) {
+      send = await api.lobby.connect(async (receivedGame: object) => {
+        game.value = receivedGame as Game
+      })
+    }
   }
 
   async function play(cardIndex: number) {

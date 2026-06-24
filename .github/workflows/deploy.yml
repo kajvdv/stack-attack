@@ -50,5 +50,6 @@ jobs:
           script: |
             cd ${{ secrets.APP_DIR }}
             git pull
+            echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose pull
             docker compose up -d

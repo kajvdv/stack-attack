@@ -115,7 +115,7 @@ async def create_lobby_route(
     }
 
 
-@router.post("/{lobby_id}/join")
+@router.post("/{lobby_id}/join", status_code=204)
 async def register_user_route(
     # request: Request,
     response: Response,

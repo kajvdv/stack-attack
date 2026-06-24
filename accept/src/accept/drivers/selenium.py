@@ -3,6 +3,8 @@ from time import sleep
 from httpx import Client
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from accept.driver import Driver, Connection
 from accept.drivers.http import HttpDriver
@@ -37,6 +39,13 @@ class SeleniumDriver(Driver):
     def __init__(self, port) -> None:
         # self.http_driver = HttpDriver(Client(base_url="http://localhost:8000"))
         self.driver = connect(port)
+        self.driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
+            'source': '''
+                window.prompt = function() { return "player 2"; };
+                window.alert = function() { return true; };
+                window.confirm = function() { return true; };
+            '''
+        })
         # self.browser2 = start_browser(5002, "user2")
         # _inject_interceptor(self.browser1)
         # _inject_interceptor(self.browser2)
@@ -69,13 +78,8 @@ class SeleniumDriver(Driver):
         return code
 
 
-        
-
     def join_game(self, code: str) -> Connection:
         self.driver.get("http://localhost:4173/")
-        self.driver.execute_script('''
-            window.prompt = function() { return "test player 2"; };
-        ''')
 
         # Fill in code
         self.driver.find_element(value='join-game-input').send_keys(code)
@@ -84,8 +88,16 @@ class SeleniumDriver(Driver):
         # Make sure the user sees the same code
         assert self.driver.find_element(value='lobby-code-display').text == code
 
+    def wait_for_game_to_start(self) -> None:
+        # Should be on lobby page
+        element = WebDriverWait(self.driver, 2).until(
+            EC.visibility_of_element_located((By.ID, "player-item-2"))
+        )
+        # self.driver.find_element(value='player-item-2')
+
     def get_lobbies(self) -> list[LobbyResponse]:
         return self.http_driver.get_lobbies()
 
     def join_lobby(self, lobby: LobbyResponse, username: str) -> Connection:
         return self.http_driver.join_lobby(lobby, username)
+
