@@ -40,16 +40,16 @@ export function getSessionToken(): string | null {
 export async function connect(
   onReceive: (game: object) => Promise<void>,
 ): Promise<(msg: string) => Promise<void>> {
-  const response = await fetch('/api/lobbies/current', {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-  const { ws_url, url } = await response.json()
+  // const response = await fetch('/api/lobbies/current', {
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //   },
+  // })
+  // const { ws_url, url } = await response.json()
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  const code = url.split('/').at(-1) ?? ''
+  // const code = url.split('/').at(-1) ?? ''
 
-  const ws = new WebSocket(`${protocol}//${window.location.host}/api/lobbies/${code}/connect`)
+  const ws = new WebSocket(`${protocol}//${window.location.host}/api/lobbies/connect`)
   ws.onmessage = (ev: MessageEvent) => {
     onReceive(JSON.parse(ev.data))
   }

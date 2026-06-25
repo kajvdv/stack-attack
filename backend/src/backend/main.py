@@ -4,20 +4,14 @@ Players can create new games using the post endpoint, to which they can connect 
 
 """
 import os
-from pathlib import Path
 import logging
 import asyncio
-import pickle
-import random
 from random import Random
-import sys
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, WebSocket, Depends
-from fastapi.responses import RedirectResponse, PlainTextResponse
+from fastapi import FastAPI
 
-from backend.lobby.routes import router as router_lobby, lobbies_create_parameters
-from backend.reload import Reloader
+from backend.lobby.routes import router as router_lobby
 
 
 logger = logging.getLogger(__name__)

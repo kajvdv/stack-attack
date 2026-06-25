@@ -121,13 +121,15 @@ def create_game(
 
 def get_lobbies(request: Request):
     return request.app.state.lobbies
+
+def get_lobbies_ws(websocket: WebSocket):
+    return websocket.app.state.lobbies
     
 
 tasks = set()
 class Lobbies:
     def __init__(
             self,
-            request: Request,
             lobbies: Annotated[dict[str, Lobby], Depends(get_lobbies)]
             # lobby_create: LobbyCreate,
             # user: str = Depends(get_current_user),

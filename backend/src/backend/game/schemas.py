@@ -29,9 +29,8 @@ class GameCreate(BaseModel):
 
 
 class GamePublic(BaseModel):
-    url: str
     id: str = constr(max_length=24)
-    size: int
     capacity: int
     creator: str
     players: list[str]
+    you: str

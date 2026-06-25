@@ -131,28 +131,24 @@ class Lobby:
 
     async def update_boards(self, message=""):
         for player_id, player in enumerate(self.players):
-            try:
-                send_coro = player.connection.send_json({
-                    "topcard": card_object(self.game.play_stack[-1]),
-                    "previous_topcard": card_object(self.game.play_stack[-2]) if len(self.game.play_stack) > 1 else None,
-                    "can_draw": bool(self.game.draw_stack),
-                    "choose_suit": self.game.asking_suit,
-                    "draw_count": self.game.draw_count,
-                    "current_player": self.players[self.game.current_player].name,
-                    "otherPlayers": {
-                        self.players[i].name: len(self.game.hands[i])
-                        for i in range(self.capacity)
-                        if self.players[i].name != player.name
-                    },
-                    "hand": [card_object(card) for card in self.game.hands[player_id]],
-                    "message": message
-                })
-                logger.debug(f"Updating {self.players[self.game.current_player].name}'s board")
-                await send_coro
-            except IndexError:
-                # the amount of players should be at least the same as the current player index
-                # Fix by having a NullConnection for every inital player
-                continue
+            logger.info("Update board")
+            send_coro = player.connection.send_json({
+                "topcard": card_object(self.game.play_stack[-1]),
+                "previous_topcard": card_object(self.game.play_stack[-2]) if len(self.game.play_stack) > 1 else None,
+                "can_draw": bool(self.game.draw_stack),
+                "choose_suit": self.game.asking_suit,
+                "draw_count": self.game.draw_count,
+                "current_player": self.players[self.game.current_player].name,
+                "otherPlayers": {
+                    self.players[i].name: len(self.game.hands[i])
+                    for i in range(len(self.players))
+                    if self.players[i].name != player.name
+                },
+                "hand": [card_object(card) for card in self.game.hands[player_id]],
+                "message": message
+            })
+            logger.debug(f"Updating {self.players[self.game.current_player].name}'s board")
+            await send_coro
 
     def get_player_by_name(self, name: str) -> Player:
         try:

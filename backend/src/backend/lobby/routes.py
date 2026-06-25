@@ -5,14 +5,14 @@ import random
 import string
 import urllib.parse
 
-from fastapi import APIRouter, Depends, Form, Request, WebSocket, Response, Body, Path, HTTPException, Cookie
-
+from fastapi import APIRouter, Depends, Form, Request, WebSocket, Response, Body, Path, HTTPException, Cookie, Query
+from jose.exceptions import ExpiredSignatureError
 
 # from backend.auth import get_current_user, generate_access_token, decode_token
 from backend.token import generate_token, decode_token
-from pesten.lobby import Player, NullConnection
+from pesten.lobby import Player, NullConnection, Lobby
 from .schemas import LobbyCreate, LobbyResponse, Card, Registration
-from .dependencies import Lobbies, HumanConnection, create_game, get_random_code
+from .dependencies import Lobbies, HumanConnection, create_game, get_random_code, get_lobbies_ws
 
 from backend.game.schemas import GamePublic
 
@@ -21,85 +21,20 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-
 def decode_session_token(session_token):
     content = decode_token(session_token)
     username = content['sub']
     return username, content['lobby']
 
 
-# @router.get('', response_model=list[LobbyResponse])
-# async def get_lobbies(lobbies_crud: Lobbies = Depends()):
-#     lobbies = lobbies_crud.get_lobbies()
-#     return [{
-#         "url": urllib.parse.quote(f"{request.url_for("get_lobby_route", lobby_id=lobby_create.name)}", safe="/:"),
-#         'id': id,
-#         'size': len(lobby.players),
-#         'capacity': lobby.capacity,
-#         'creator': lobby.creator,
-#         'players': list(map(lambda p: p.name, lobby.players)),
-#     }
-#         for id, lobby in lobbies.items()
-#         if not lobby.game.has_won
-#         and len([p for p in lobby.players
-#             if not isinstance(p.connection, NullConnection)
-#         ]) > 0
-#     ]
-
-
-lobbies_create_parameters: dict[str, LobbyCreate] = {}
-def get_lobbies_create_parameters():
-    return lobbies_create_parameters
-
-
-@router.get("/current")
-def get_current_lobby(
-        request: Request,
-        response: Response,
-        sessionToken: str = Cookie(),
-        lobbies_crud: Lobbies = Depends(),
-):
-    lobby_id = decode_token(sessionToken)['lobby']
-    if lobby_id in lobbies_crud.lobbies and not lobbies_crud.get_lobby(lobby_id).game.has_won:
-        return {
-            "ws_url": str(request.url_for("connect_to_lobby", lobby_name=lobby_id)),
-            "url": urllib.parse.quote(f"{request.url_for("get_lobby_route", lobby_id=lobby_id)}", safe="/:")
-        }
-    else:
-        response.delete_cookie("sessionToken")
-        if lobby_id in lobbies_crud.lobbies:
-            lobbies_crud.lobbies.pop(lobby_id)
-        raise HTTPException(status_code=410)
-
-
-@router.get("/{lobby_id}")
-def get_lobby_route(
-        request: Request,
-        lobby_id: str,
-        lobbies_crud: Lobbies = Depends()
-):
-    lobby = lobbies_crud.get_lobby(lobby_id)
-    return {
-        "url": urllib.parse.quote(f"{request.url_for("get_lobby_route", lobby_id=lobby_id)}", safe="/:"),
-        'id': lobby_id,
-        'size': len(lobby.players),
-        'capacity': lobby.capacity,
-        'creator': lobby.creator,
-        'players': [p.name for p in lobby.players],
-    }
-
-
 @router.post('', response_model=GamePublic)
 async def create_lobby_route(
-        request: Request,
         response: Response,
         lobby_create: LobbyCreate,
-        # user: str = Depends(get_current_user),
-        sessionToken: str = Cookie(None),
+        sessionToken: Annotated[str | None, Cookie()] = None,
         lobbies_crud: Lobbies = Depends(),
         game = Depends(create_game),
         random_code = Depends(get_random_code)
-        # lobbies_create_parameters = Depends(get_lobbies_create_parameters)
 ):
     if sessionToken:
         # Delete user
@@ -109,77 +44,96 @@ async def create_lobby_route(
         if not old_lobby.players:
             lobbies_crud.lobbies.pop(lobby_name)
     lobby_create.name = random_code
-    await lobbies_crud.create_lobby(lobby_create, game)
+    lobby = await lobbies_crud.create_lobby(lobby_create, game)
     
-    # Save config to restore lobby on startup
-    # request.state.lobbies_create_parameters[lobby_create.name] = lobby_create
-    response.set_cookie("sessionToken", generate_token(lobby_create.creator, lobby_create.name))
+    response.set_cookie("sessionToken", generate_token(lobby.creator, random_code))
     return {
-        "url": urllib.parse.quote(f"{request.url_for("get_lobby_route", lobby_id=lobby_create.name)}", safe="/:"),
-        'id': lobby_create.name,
-        'size': 1 + lobby_create.aiCount,
-        'capacity': lobby_create.size,
-        'creator': lobby_create.creator,
-        'players': [lobby_create.creator],
+        'id': random_code,
+        'capacity': lobby.capacity,
+        'creator': lobby.creator,
+        'players': [p.name for p in lobby.players],
+        'you': lobby.creator
     }
 
 
-@router.post("/{lobby_id}/join", status_code=204)
+@router.post("/join", response_model=GamePublic)
 async def register_user_route(
     response: Response,
-    username: Annotated[str, Body(embed=True)],
-    lobby_id: str = Path(),
+    username: Annotated[str | None, Body(embed=True)] = None,
+    code: Annotated[str | None, Query()] = None,
+    sessionToken: Annotated[str | None, Cookie()] = None,
     lobbies_crud: Lobbies = Depends(),
 ):
-    lobby = lobbies_crud.get_lobby(lobby_id)
-    usernames = [p.name for p in lobby.players]
-    if username in usernames:
-        raise HTTPException(status_code=409)
-    await lobby.connect(Player(username, NullConnection()))
-    response.set_cookie("sessionToken", generate_token(username, lobby_id))
+    if not sessionToken and not code:
+        raise HTTPException(detail="Specify lobby code with query parameter", status_code=400)
+
+    if sessionToken and code and username:
+        curr_username, cookie_code = decode_session_token(sessionToken)
+        if code != cookie_code:
+            # Player switching from lobby
+            current_lobby = lobbies_crud.get_lobby(cookie_code)
+            new_lobby = lobbies_crud.get_lobby(code)
+
+            current_lobby.delete_player(curr_username)
+
+            await new_lobby.connect(Player(username, NullConnection()))
+            response.set_cookie("sessionToken", generate_token(username, code))
+            return {
+                'id': code,
+                'capacity': new_lobby.capacity,
+                'creator': new_lobby.creator,
+                'players': [p.name for p in new_lobby.players],
+                'you': username
+            }
+
+    elif sessionToken:
+        username, cookie_code = decode_session_token(sessionToken)
+        lobby = lobbies_crud.get_lobby(cookie_code)
+        return {
+            'id': cookie_code,
+            'capacity': lobby.capacity,
+            'creator': lobby.creator,
+            'players': [p.name for p in lobby.players],
+            'you': username
+        }
+    elif code:
+        if not username:
+            raise HTTPException(422, "No username given.")
+        lobby = lobbies_crud.get_lobby(code)
+        usernames = [p.name for p in lobby.players]
+        if username in usernames:
+            raise HTTPException(409, "Username already taken.")
+        await lobby.connect(Player(username, NullConnection()))
+        response.set_cookie("sessionToken", generate_token(username, code))
+        return {
+            'id': code,
+            'capacity': lobby.capacity,
+            'creator': lobby.creator,
+            'players': [p.name for p in lobby.players],
+            'you': username
+        }
+    raise Exception("Unhandled path")
 
 
-@router.delete('/{id}', response_model=LobbyResponse)
-async def delete_lobby(
-        id: str,
-        lobbies_crud: Lobbies = Depends(),
-):
-    lobby = await lobbies_crud.delete_lobby(id)
-    return {
-        'id': id,
-        'size': len(lobby.players),
-        'capacity': lobby.capacity,
-        'creator': lobbies_crud.user,
-        'players': [p.name for p in lobby.players],
-    }
+# @router.get('/{lobby_id}/rules')
+# def get_lobby_rules(lobby_id, request: Request):
+#     lobbies = request.state.lobbies
+#     lobby = lobbies[lobby_id]
+#     assert lobby
+#     return {Card.from_int(value).value: rule for value, rule in lobby.game.rules.items()}
 
 
-@router.get('/{lobby_id}/rules')
-def get_lobby_rules(lobby_id, request: Request):
-    lobbies = request.state.lobbies
-    lobby = lobbies[lobby_id]
-    assert lobby
-    return {Card.from_int(value).value: rule for value, rule in lobby.game.rules.items()}
-
-
-@router.websocket("/{lobby_name}/connect")
+@router.websocket("/connect")
 async def connect_to_lobby(
-        lobby_name: str,
         websocket: WebSocket,
-        sessionToken: Annotated[str, Cookie()]
-        # connection: HumanConnection = Depends(),
+        sessionToken: Annotated[str, Cookie()],
+        lobbies: Annotated[dict[str, Lobby], Depends(get_lobbies_ws)]
 ):
+    lobbies_crud = Lobbies(lobbies)
     username, lobby_id = decode_session_token(sessionToken)
-    # await websocket.accept()
-    lobbies = websocket.app.state.lobbies
-    try:
-        lobby = lobbies[lobby_name]
-    except KeyError as e:
-        logger.error(f"Could not find {lobby_name} in lobbies")
-        logger.error(f"Current lobbies: {lobbies}")
-        return
+    lobby = lobbies_crud.get_lobby(lobby_id)
     connection = HumanConnection(websocket, username)
     player = Player(connection.username, connection)
-    logger.info(f"Connecting {connection.username} to {lobby_name}")
+    logger.info(f"Connecting {connection.username} to {lobby_id}")
     await lobby.connect(player)
 
