@@ -163,19 +163,22 @@ class Lobbies:
         logger.info(f"New game created: {lobby_name}")
         return lobby
 
-    async def delete_lobby(self, lobby_create: LobbyCreate):
-        user = lobby_create.creator
-        
+    async def delete_lobby(self, lobby_code: str):        
         try:
-            lobby_to_be_deleted = self.lobbies.pop(lobby_name)
+            lobby_to_be_deleted = self.lobbies.pop(lobby_code)
         except KeyError as e:
             logger.error(f'Lobby with name of {e} does not exist')
             raise HTTPException(status.HTTP_404_NOT_FOUND, "This lobby does not exists")
-        if lobby_to_be_deleted.players[0].name != user:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "This lobby does not belong to you")
-
-        for player in lobby_to_be_deleted.players:
-            await player.connection.close()
 
         return lobby_to_be_deleted
+
+
+    async def delete_player_from_lobby(self, lobby_code, username):
+        lobby = self.get_lobby(lobby_code)
+        await lobby.delete_player(username)
+
+        if not lobby.players:
+            await self.delete_lobby(lobby_code)
+
+
         

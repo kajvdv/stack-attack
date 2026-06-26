@@ -2,6 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.lobby.dependencies import get_lobbies, get_lobbies_ws, get_random_code
+from backend.token import generate_token
 from pesten.lobby import Lobby
 
 
@@ -54,6 +55,22 @@ def test_join_lobby(player_1: TestClient, player_2: TestClient):
     }
 
 
+def test_creator_leaves_lobby_after_creation(player_1: TestClient, lobbies: dict[str, Lobby]):
+    player_1.post("/lobbies", json=get_testgame_config())
+    response = player_1.post("/lobbies/leave")
+    assert response.status_code == 204
+    assert lobbies == {}
+    assert not player_1.cookies.get("sessionToken")
+
+
+def test_player_2_leaves_lobby(player_1: TestClient, player_2: TestClient, lobbies: dict[str, Lobby]):
+    player_1.post("/lobbies", json=get_testgame_config())
+    player_2.post("/lobbies/join?code=AAAA", json={'username': "player 2"})
+    player_2.post("/lobbies/leave")
+
+    assert [p.name for p in lobbies['AAAA'].players] == ['player 1']
+
+
 def test_without_a_username(player_1: TestClient, player_2: TestClient):
     player_1.post("/lobbies", json=get_testgame_config())
     assert player_2.post(f"/lobbies/join?code=AAAA").status_code == 422
@@ -80,6 +97,13 @@ def test_player_2_joins_lobby(player_1: TestClient, player_2: TestClient):
 
 def test_player_joins_without_code(player_1):
     assert player_1.post("/lobbies/join").status_code == 400
+
+
+def test_player_joins_with_invalid_cookie(player_1: TestClient):
+    token = generate_token("player 1", "ZZZZ")
+    player_1.cookies.set('sessionToken', token, "testserver.local")
+    player_1.post("/lobbies/join", json={"username": "player 1"})
+    assert not player_1.cookies.get('sessionToken')
 
 
 def test_player_2_rejoins(player_1: TestClient, player_2: TestClient):

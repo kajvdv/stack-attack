@@ -6,6 +6,7 @@ import string
 import urllib.parse
 
 from fastapi import APIRouter, Depends, Form, Request, WebSocket, Response, Body, Path, HTTPException, Cookie, Query
+from fastapi.responses import JSONResponse
 from jose.exceptions import ExpiredSignatureError
 
 # from backend.auth import get_current_user, generate_access_token, decode_token
@@ -40,7 +41,7 @@ async def create_lobby_route(
         # Delete user
         username, lobby_name = decode_session_token(sessionToken)
         old_lobby = lobbies_crud.get_lobby(lobby_name)
-        old_lobby.delete_player(username)
+        await old_lobby.delete_player(username)
         if not old_lobby.players:
             lobbies_crud.lobbies.pop(lobby_name)
     lobby_create.name = random_code
@@ -73,8 +74,8 @@ async def register_user_route(
             # Player switching from lobby
             current_lobby = lobbies_crud.get_lobby(cookie_code)
             new_lobby = lobbies_crud.get_lobby(code)
-
-            current_lobby.delete_player(curr_username)
+ 
+            await current_lobby.delete_player(curr_username)
 
             await new_lobby.connect(Player(username, NullConnection()))
             response.set_cookie("sessionToken", generate_token(username, code))
@@ -88,7 +89,12 @@ async def register_user_route(
 
     elif sessionToken:
         username, cookie_code = decode_session_token(sessionToken)
-        lobby = lobbies_crud.get_lobby(cookie_code)
+        try:
+            lobby = lobbies_crud.get_lobby(cookie_code)
+        except HTTPException as e:
+            print("deleting cookie")
+            response.delete_cookie("sessionToken")
+            return JSONResponse(content={"detail": e.detail}, headers={**response.headers}, status_code=e.status_code)
         return {
             'id': cookie_code,
             'capacity': lobby.capacity,
@@ -113,6 +119,18 @@ async def register_user_route(
             'you': username
         }
     raise Exception("Unhandled path")
+
+
+@router.post("/leave", status_code=204)
+async def user_leaves_route(
+    response: Response,
+    lobbies_crud: Annotated[Lobbies, Depends()],
+    sessionToken: Annotated[str, Cookie()],
+):
+    username, lobby_code = decode_session_token(sessionToken)
+    await lobbies_crud.delete_player_from_lobby(lobby_code, username)
+
+    response.delete_cookie("sessionToken")
 
 
 # @router.get('/{lobby_id}/rules')

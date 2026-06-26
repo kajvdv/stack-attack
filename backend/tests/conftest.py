@@ -14,7 +14,7 @@ def app_fixture():
 
 
 @pytest.fixture
-def client():
+def client(app):
     with TestClient(app) as c:
         yield c
 

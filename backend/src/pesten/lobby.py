@@ -157,12 +157,14 @@ class Lobby:
             return None
         return player
     
-    def delete_player(self, name: str):
-        self.players.pop(
+    async def delete_player(self, name: str):
+        player = self.players.pop(
             self.players.index(
                 self.get_player_by_name(name)
             )
         )
+        await player.connection.close()
+
         
     async def play_choose(self, player: Player, choose):
         # player = self.get_player_by_name(name)
