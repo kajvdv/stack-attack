@@ -78,12 +78,19 @@ class SeleniumDriver(Driver):
         return code
 
 
-    def join_game(self, code: str) -> Connection:
+    def join_game(self, code: str, username: str) -> Connection:
         self.driver.get("http://localhost:4173/")
 
         # Fill in code
         self.driver.find_element(value='join-game-input').send_keys(code)
         self.driver.find_element(value='join-game-btn').click()
+
+        WebDriverWait(self.driver, 2).until(
+            EC.visibility_of_element_located((By.ID, "prompt-username"))
+        ).send_keys(username)
+        WebDriverWait(self.driver, 2).until(
+            EC.visibility_of_element_located((By.ID, "confirm-username"))
+        ).click()
 
         # Make sure the user sees the same code
         assert self.driver.find_element(value='lobby-code-display').text == code

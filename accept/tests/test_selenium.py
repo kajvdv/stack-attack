@@ -22,7 +22,7 @@ def test_(player1: Driver, player2: Driver):
     })
     print("the code was", code)
 
-    player2.join_game(code)
+    player2.join_game(code, "player 2")
     player1.wait_for_game_to_start()
     
     assert 0

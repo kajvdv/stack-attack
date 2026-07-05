@@ -21,7 +21,10 @@ export const useGameStore = defineStore('game', () => {
         const otherPlayers = Object.keys(game.value.otherPlayers)
         console.log(otherPlayers)
         console.log(lobby.value?.players)
-        if (!otherPlayers.every((player) => lobby.value?.players.includes(player))) {
+        if (
+          !lobby.value ||
+          !otherPlayers.every((player) => lobby.value?.players.includes(player))
+        ) {
           await fetchCurrentSession()
         }
       })

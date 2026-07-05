@@ -33,7 +33,7 @@ describe('Home screen', () => {
     await wrapper.find('#join-game-btn').trigger('click')
 
     await flushPromises()
-    await delay(1000)
+    await delay()
     expect(router.currentRoute.value.fullPath).toBe('/join?code=AAAA')
   })
 })
