@@ -6,9 +6,12 @@ import string
 import random
 from random import Random
 
-from fastapi import Depends, BackgroundTasks, status, Form, Request
+from fastapi import Depends, BackgroundTasks, status, Form, Request, Cookie, Response
 from fastapi.exceptions import HTTPException
 from fastapi.websockets import WebSocket, WebSocketDisconnect
+from jose.exceptions import ExpiredSignatureError
+
+from backend.token import decode_token
 from pesten.pesten import Pesten, card
 from pesten.lobby import Lobby, NullConnection, AIConnection, Player, ConnectionDisconnect
 
@@ -140,11 +143,18 @@ class Lobbies:
     def get_lobbies(self):
         return self.lobbies
 
-    def get_lobby(self, lobby_name):
+    def get_lobby(self, lobby_name: str):
         try:
             return self.lobbies[lobby_name]
+            
         except KeyError:
             raise HTTPException(status_code=404, detail="Lobby not found.")
+
+    def get_lobby_code(self, lobby: Lobby):
+        for k, v in self.lobbies.items():
+            if v == lobby:
+                return k
+        raise HTTPException(status_code=404, detail="Code not found.")
 
     async def create_lobby(self, lobby_create: LobbyCreate, game: Pesten):
         user = lobby_create.creator
@@ -173,12 +183,33 @@ class Lobbies:
         return lobby_to_be_deleted
 
 
-    async def delete_player_from_lobby(self, lobby_code, username):
-        lobby = self.get_lobby(lobby_code)
+    async def delete_player_from_lobby(self, lobby: Lobby, username: str):
         await lobby.delete_player(username)
 
         if not lobby.players:
+            lobby_code = self.get_lobby_code(lobby)
             await self.delete_lobby(lobby_code)
 
 
-        
+def decode_session_token(sessionToken: Annotated[str, Cookie()]) -> tuple[str, str]:
+    content = decode_token(sessionToken)
+    username = content['sub']
+    return username, content['lobby']
+
+
+def get_session_token(
+        response: Response,
+        lobbies_crud: Annotated[Lobbies, Depends()],
+        sessionToken: Annotated[str | None, Cookie()] = None,
+) -> tuple[str, Lobby] | None:
+    if not sessionToken:
+        return None
+    try:
+        username, lobby_code = decode_session_token(sessionToken)
+        lobby = lobbies_crud.get_lobby(lobby_code)
+        return (username, lobby)
+    except ExpiredSignatureError:
+        return None
+    except HTTPException:
+        response.delete_cookie("sessionToken")
+        return None

@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { Button } from '@/components/buttons'
 import { Card } from '@/components/card'
+import { useGameStore } from '@/stores/game'
 import { useLobbyStore } from '@/stores/lobby'
-import type { LobbyCreate } from '@/types/lobby'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const lobbyStore = useLobbyStore()
+const gameStore = useGameStore()
 const router = useRouter()
 
 const username = ref('')
 const size = ref(4)
 
 async function createLobby() {
-  await lobbyStore.create({ creator: username.value, size: size.value })
-  router.push(`/lobby?code=${lobbyStore.code}`)
+  await gameStore.create(size.value, username.value)
 }
 </script>
 
@@ -23,6 +23,7 @@ async function createLobby() {
     <RouterLink v-slot="{ navigate, isActive }" to="/" custom>
       <div class="mb-5">
         <a
+          id="back-home-link"
           @click="navigate"
           class="text-xs hover:underline cursor-pointer text-(--ink-dim) uppercase"
           >← Terug</a
@@ -31,7 +32,7 @@ async function createLobby() {
     </RouterLink>
     <div class="font-title text-lg font-bold text-(--ink) mb-1">Lobby aanmaken</div>
     <div class="text-xs text-(--ink-mid) mb-5">Kies een naam en stel de regels in.</div>
-    <form @submit.prevent="createLobby">
+    <form @submit.prevent="createLobby()">
       <div class="mb-4">
         <label class="block mb-1.5 text-xs text-(--ink-mid)" for="username"
           >Jouw naam in dit spel</label
@@ -57,14 +58,21 @@ async function createLobby() {
           name="playerCount"
           class="w-full border box-border rounded-md py-2.5 px-3 text-sm text-(--ink) bg-(--cream) border-(--border) focus:border-(--border-focus) outline-0"
         >
-          <option value="2">2 spelers</option>
-          <option value="3">3 spelers</option>
-          <option value="4">4 spelers</option>
-          <option value="5">5 spelers</option>
-          <option value="6">6 spelers</option>
+          <option :value="2">2 spelers</option>
+          <option :value="3">3 spelers</option>
+          <option :value="4">4 spelers</option>
+          <option :value="5">5 spelers</option>
+          <option :value="6">6 spelers</option>
         </select>
         <div class="text-xs text-(--ink-dim) mt-1 italic">2 – 6 spelers toegestaan.</div>
-        <Button id="confirm-game-btn" type="green" class="mt-4">Maak lobby aan →</Button>
+        <Button
+          @click="createLobby()"
+          type="submit"
+          id="confirm-game-btn"
+          variant="green"
+          class="mt-4"
+          >Maak lobby aan →</Button
+        >
       </div>
     </form>
   </Card>

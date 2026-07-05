@@ -1,4 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { useGameStore } from '@/stores/game'
+import { createRouter, createWebHistory, type Router } from 'vue-router'
 import { routes, handleHotUpdate } from 'vue-router/auto-routes'
 
 const router = createRouter({
@@ -6,8 +7,28 @@ const router = createRouter({
   routes,
 })
 
-if (import.meta.hot) {
-  handleHotUpdate(router)
+// if (import.meta.hot) {
+//   handleHotUpdate(router)
+// }
+
+export function initRouter(router: Router) {
+  router.beforeEach(async (to, from) => {
+    const gameStore = useGameStore()
+    if (to.path == '/lobby' && !gameStore.lobby) {
+      await gameStore.fetchCurrentSession()
+    }
+    if (to.path === '/lobby' && !gameStore.lobby && !to.query.code) {
+      return '/'
+    }
+
+    if (to.path === '/lobby' && !gameStore.lobby && to.query.code) {
+      return `/join?code=${to.query.code}`
+    }
+
+    if (to.path === '/join' && !to.query.code) {
+      return '/'
+    }
+  })
 }
 
 export default router

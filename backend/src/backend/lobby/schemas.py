@@ -36,7 +36,7 @@ class LobbyResponse(BaseModel):
     id: str = constr(max_length=24)
     size: int
     capacity: int
-    creator: str
+    you: str
     players: list[str]
 
 

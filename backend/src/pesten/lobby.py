@@ -196,3 +196,7 @@ class Lobby:
             await self.update_boards(f"{name} has won the game!")
         else:
             await self.update_boards(message=message)
+
+    def username_taken(self, username) -> bool:
+        usernames = [p.name for p in self.players]
+        return username in usernames

@@ -1,6 +1,7 @@
-import type { LobbyCreate } from '@/types/lobby'
+import type { Session } from '@/types/api'
+import type { LobbyCreate, LobbyResponse } from '@/types/lobby'
 
-export async function createLobby({ creator, size }: LobbyCreate) {
+export async function createLobby({ creator, size }: LobbyCreate): Promise<LobbyResponse> {
   const response = await fetch('/api/lobbies', {
     method: 'post',
     body: JSON.stringify({ creator, size }),
@@ -11,19 +12,25 @@ export async function createLobby({ creator, size }: LobbyCreate) {
   return await response.json()
 }
 
-export async function getLobby(code: string) {
-  const response = await fetch(`/api/lobbies/${code}`)
-  return await response.json()
-}
-
-export async function join(username: string, lobbyCode: string) {
-  await fetch(`/api/lobbies/${lobbyCode}/join`, {
+export async function join(code?: string, username?: string): Promise<LobbyResponse> {
+  const url = '/api/lobbies/join' + (code ? `?code=${code}` : '')
+  const response = await fetch(url, {
     method: 'post',
-    body: JSON.stringify({ username }),
+    body: username ? JSON.stringify({ username }) : undefined,
     headers: {
       'Content-Type': 'application/json',
     },
   })
+  return await response.json()
+}
+
+export async function getCurrentLobby(): Promise<LobbyResponse> {
+  const response = await fetch('/api/lobbies/current', {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  return await response.json()
 }
 
 export function getSessionToken(): string | null {
@@ -35,6 +42,14 @@ export function getSessionToken(): string | null {
   } else {
     return null
   }
+}
+
+export function getCurrentSession(): Session | null {
+  const token = getSessionToken()
+  if (!token) return null
+  const parts = token.split('.')
+  const { sub: username, lobby, exp } = JSON.parse(atob(parts.at(1) ?? ''))
+  return { username, lobby }
 }
 
 export async function connect(

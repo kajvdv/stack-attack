@@ -1,14 +1,18 @@
-import { test as base, expect, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
+import { setActivePinia, createPinia } from 'pinia'
 import { createTestingPinia } from '@pinia/testing'
-import { createRouter, createMemoryHistory } from 'vue-router'
+import { config } from '@vue/test-utils'
+import { test as base, expect, vi } from 'vitest'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 import { createApp } from 'vue'
 import { createApi } from '@/plugins/client'
-import { config } from '@vue/test-utils'
+import { initRouter } from '@/router'
+import * as api from '@/api'
+
+vi.mock('@/api')
 
 export const test = base
-  .extend('pinia', () => {
+  .extend('pinia', async () => {
     const pinia = createPinia()
     setActivePinia(pinia)
     return pinia
@@ -18,38 +22,33 @@ export const test = base
       history: createMemoryHistory(),
       routes: routes,
     })
-    router.push('/')
-    await router.isReady()
+    console.log('initing router')
+    initRouter(router)
     return router
   })
-  .extend('client', async () => {
-    const mockClient = await import('@/api/mock')
-    return mockClient
-  })
-  .extend('app', () => {
+  .extend('app', async ({ pinia, router }) => {
+    // Used for Pinia unit testing
     const app = createApp({
-      setup: () => {
-        // For no template error
+      setup() {
+        // suppress missing template warning
         return () => {}
       },
     })
+    app.use(pinia)
+    app.use(router)
+    app.use(createApi(api))
+    // await router.isReady()
     return app
   })
 
-test.beforeEach(({ app, pinia, router, client }) => {
-  config.global.plugins = [createApi(client), createTestingPinia({ stubActions: false }), router]
-  // This for Pinia to work
-  app.use(pinia)
-  app.use(createApi(client))
-
-  // app.use(router)
-  // const rootEl = document.createElement('div')
-  // document.body.appendChild(rootEl)
-  // app.mount(rootEl)
+test.beforeEach(async ({ router }) => {
+  config.global.plugins = [createApi(api), createTestingPinia(), router]
 })
 
 test.afterEach(() => {
-  vi.resetModules()
+  vi.resetAllMocks()
 })
+
+export const delay = (t: number = 100) => new Promise((resolve) => setTimeout(resolve, t))
 
 export { expect }

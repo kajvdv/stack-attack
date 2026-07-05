@@ -11,6 +11,7 @@ export default mergeConfig(
       root: fileURLToPath(new URL('./', import.meta.url)),
       silent: 'passed-only',
       globals: true,
+      restoreMocks: true,
     },
   }),
 )

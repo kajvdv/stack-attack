@@ -4,13 +4,15 @@ import { Button } from '@/components/buttons'
 import { TextInput } from '@/components/input/index.ts'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+import { useApi } from '@/plugins/client'
 
 const router = useRouter()
 const code = ref('')
+const api = useApi()
 
-function joinLobby() {
+async function joinLobby() {
   if (code.value.length === 4) {
-    router.push(`/lobby?code=${code.value}`)
+    await router.push(`/join?code=${code.value}`)
   }
 }
 </script>
@@ -24,7 +26,7 @@ function joinLobby() {
       </h2>
     </CardTitle>
     <RouterLink to="/new" v-slot="{ navigate, isActive }" custom>
-      <Button id="create-game-btn" class="mb-2.5" type="ink" @click="navigate"
+      <Button id="create-game-btn" class="mb-2.5" variant="ink" @click="navigate"
         >＋ &nbsp;Nieuwe lobby maken</Button
       >
     </RouterLink>
@@ -34,17 +36,18 @@ function joinLobby() {
         >of</span
       >
     </div>
-    <form @submit.prevent="joinLobby">
-      <TextInput
-        id="join-game-input"
-        v-model="code"
-        name="code"
-        class="mb-3.5"
-        placeholder="Code"
-      ></TextInput>
-      <Button id="join-game-btn" type="ghost" style="margin-bottom: 10px"
-        >→ &nbsp;Lobby joinen met code</Button
-      >
-    </form>
+    <!-- <form @submit.prevent="joinLobby"> -->
+    <TextInput
+      id="join-game-input"
+      v-model="code"
+      name="code"
+      class="mb-3.5"
+      placeholder="Code"
+    ></TextInput>
+    <!-- <button id="join-game-btn" @click="joinLobby">click</button> -->
+    <Button id="join-game-btn" variant="ghost" style="margin-bottom: 10px" @click="joinLobby"
+      >→ &nbsp;Lobby joinen met code</Button
+    >
+    <!-- </form> -->
   </Card>
 </template>

@@ -18,9 +18,11 @@ const topCard = { value: 'queen', suit: 'hearts' }
 gameStore.connect()
 
 const otherCards = computed(() => {
-  const otherCards = Object.entries(gameStore.otherPlayers).map(([playerName, cardCount]) => {
-    return Array(cardCount).fill({ value: '', suit: '' })
-  })
+  const otherCards = Object.entries(gameStore.game?.otherPlayers ?? []).map(
+    ([playerName, cardCount]) => {
+      return Array<Card>(cardCount).fill({ value: '', suit: '' })
+    },
+  )
   return otherCards
 })
 </script>

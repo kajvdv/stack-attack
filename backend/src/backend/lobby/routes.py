@@ -13,7 +13,7 @@ from jose.exceptions import ExpiredSignatureError
 from backend.token import generate_token, decode_token
 from pesten.lobby import Player, NullConnection, Lobby
 from .schemas import LobbyCreate, LobbyResponse, Card, Registration
-from .dependencies import Lobbies, HumanConnection, create_game, get_random_code, get_lobbies_ws
+from .dependencies import Lobbies, HumanConnection, create_game, get_random_code, get_lobbies_ws, get_session_token, decode_session_token
 
 from backend.game.schemas import GamePublic
 
@@ -22,28 +22,19 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def decode_session_token(session_token):
-    content = decode_token(session_token)
-    username = content['sub']
-    return username, content['lobby']
-
-
 @router.post('', response_model=GamePublic)
 async def create_lobby_route(
         response: Response,
         lobby_create: LobbyCreate,
-        sessionToken: Annotated[str | None, Cookie()] = None,
+        session_content: Annotated[tuple[str, Lobby] | None, Depends(get_session_token)] = None,
         lobbies_crud: Lobbies = Depends(),
         game = Depends(create_game),
         random_code = Depends(get_random_code)
 ):
-    if sessionToken:
+    if session_content:
         # Delete user
-        username, lobby_name = decode_session_token(sessionToken)
-        old_lobby = lobbies_crud.get_lobby(lobby_name)
-        await old_lobby.delete_player(username)
-        if not old_lobby.players:
-            lobbies_crud.lobbies.pop(lobby_name)
+        username, old_lobby = session_content
+        await lobbies_crud.delete_player_from_lobby(old_lobby, username)
     lobby_create.name = random_code
     lobby = await lobbies_crud.create_lobby(lobby_create, game)
     
@@ -57,58 +48,48 @@ async def create_lobby_route(
     }
 
 
+@router.get("/current")
+def get_current_lobby_route(
+    session_content: Annotated[tuple[str, Lobby] | None, Depends(get_session_token)] = None,
+    lobbies_crud: Lobbies = Depends(),
+):
+    if not session_content:
+        raise HTTPException(400, "Not in a session.")
+    cookie_username, lobby = session_content
+    return {
+        'id': lobbies_crud.get_lobby_code(lobby),
+        'capacity': lobby.capacity,
+        'creator': lobby.creator,
+        'players': [p.name for p in lobby.players],
+        'you': cookie_username
+    }
+
+
 @router.post("/join", response_model=GamePublic)
 async def register_user_route(
     response: Response,
     username: Annotated[str | None, Body(embed=True)] = None,
     code: Annotated[str | None, Query()] = None,
-    sessionToken: Annotated[str | None, Cookie()] = None,
+    session_content: Annotated[tuple[str, Lobby] | None, Depends(get_session_token)] = None,
     lobbies_crud: Lobbies = Depends(),
 ):
-    if not sessionToken and not code:
-        raise HTTPException(detail="Specify lobby code with query parameter", status_code=400)
+    if code:
+        query_lobby = lobbies_crud.get_lobby(code)
+        if session_content:
+            cookie_username, cookie_lobby = session_content
+            await cookie_lobby.delete_player(cookie_username)
 
-    if sessionToken and code and username:
-        curr_username, cookie_code = decode_session_token(sessionToken)
-        if code != cookie_code:
-            # Player switching from lobby
-            current_lobby = lobbies_crud.get_lobby(cookie_code)
-            new_lobby = lobbies_crud.get_lobby(code)
- 
-            await current_lobby.delete_player(curr_username)
-
-            await new_lobby.connect(Player(username, NullConnection()))
-            response.set_cookie("sessionToken", generate_token(username, code))
-            return {
-                'id': code,
-                'capacity': new_lobby.capacity,
-                'creator': new_lobby.creator,
-                'players': [p.name for p in new_lobby.players],
-                'you': username
-            }
-
-    elif sessionToken:
-        username, cookie_code = decode_session_token(sessionToken)
-        try:
-            lobby = lobbies_crud.get_lobby(cookie_code)
-        except HTTPException as e:
-            print("deleting cookie")
-            response.delete_cookie("sessionToken")
-            return JSONResponse(content={"detail": e.detail}, headers={**response.headers}, status_code=e.status_code)
-        return {
-            'id': cookie_code,
-            'capacity': lobby.capacity,
-            'creator': lobby.creator,
-            'players': [p.name for p in lobby.players],
-            'you': username
-        }
-    elif code:
-        if not username:
-            raise HTTPException(422, "No username given.")
+        if not username and session_content:
+            _, cookie_lobby = session_content
+            if cookie_lobby != query_lobby:
+                raise HTTPException(422, "No username was given.")
+        elif not username:
+            raise HTTPException(422, "No username was given.")
         lobby = lobbies_crud.get_lobby(code)
-        usernames = [p.name for p in lobby.players]
-        if username in usernames:
+        if lobby.username_taken(username):
             raise HTTPException(409, "Username already taken.")
+
+
         await lobby.connect(Player(username, NullConnection()))
         response.set_cookie("sessionToken", generate_token(username, code))
         return {
@@ -118,19 +99,33 @@ async def register_user_route(
             'players': [p.name for p in lobby.players],
             'you': username
         }
-    raise Exception("Unhandled path")
+    
+    elif session_content:
+        cookie_username, lobby = session_content
+        return {
+            'id': lobbies_crud.get_lobby_code(lobby),
+            'capacity': lobby.capacity,
+            'creator': lobby.creator,
+            'players': [p.name for p in lobby.players],
+            'you': cookie_username
+        }
+
+    else:
+        raise HTTPException(detail="No code or session token.", headers=dict(response.headers), status_code=422)
+
 
 
 @router.post("/leave", status_code=204)
 async def user_leaves_route(
     response: Response,
     lobbies_crud: Annotated[Lobbies, Depends()],
-    sessionToken: Annotated[str, Cookie()],
+    session_content: Annotated[tuple[str, Lobby] | None, Depends(get_session_token)] = None,
 ):
-    username, lobby_code = decode_session_token(sessionToken)
-    await lobbies_crud.delete_player_from_lobby(lobby_code, username)
+    if session_content:
+        username, lobby = session_content
+        await lobbies_crud.delete_player_from_lobby(lobby, username)
 
-    response.delete_cookie("sessionToken")
+        response.delete_cookie("sessionToken")
 
 
 # @router.get('/{lobby_id}/rules')
@@ -144,14 +139,13 @@ async def user_leaves_route(
 @router.websocket("/connect")
 async def connect_to_lobby(
         websocket: WebSocket,
-        sessionToken: Annotated[str, Cookie()],
+        username_and_lobby_id: Annotated[str, Depends(decode_session_token)],
         lobbies: Annotated[dict[str, Lobby], Depends(get_lobbies_ws)]
 ):
+    username, lobby_id = username_and_lobby_id
     lobbies_crud = Lobbies(lobbies)
-    username, lobby_id = decode_session_token(sessionToken)
     lobby = lobbies_crud.get_lobby(lobby_id)
     connection = HumanConnection(websocket, username)
     player = Player(connection.username, connection)
-    logger.info(f"Connecting {connection.username} to {lobby_id}")
     await lobby.connect(player)
 

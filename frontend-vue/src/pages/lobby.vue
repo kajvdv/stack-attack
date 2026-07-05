@@ -10,39 +10,12 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 
-const lobbyStore = useLobbyStore()
-const gameStore = useGameStore()
 const counter = ref<number | null>(null)
-const { otherPlayers } = storeToRefs(gameStore)
-if (lobbyStore.code === '' && route.query.code) {
-  const code = route.query.code as string
-  const session = lobbyStore.currentSession
-  if (session.name == '' || session.lobby !== code) {
-    let username = null
-    while (!username) {
-      username = window.prompt('Enter your name:')
-    }
-    lobbyStore.joinLobby(username, code).then(() => {
-      gameStore.connect()
-    })
-  }
-  lobbyStore.getLobby(code)
-}
+
+const gameStore = useGameStore()
 gameStore.connect()
 
-watch(otherPlayers, async () => {
-  await lobbyStore.getLobby(lobbyStore.code)
-  if (lobbyStore.capacity === lobbyStore.players.length) {
-    counter.value = 5
-    setInterval(async () => {
-      if (!counter.value) {
-        await router.push('/board')
-      } else {
-        counter.value -= 1
-      }
-    }, 1000)
-  }
-})
+let username = null
 </script>
 
 <template>
@@ -52,7 +25,7 @@ watch(otherPlayers, async () => {
         id="lobby-code-display"
         class="font-title text-3xl font-black tracking-widest text-(--ink)"
       >
-        {{ lobbyStore.code }}
+        {{ gameStore.code }}
       </div>
       <div
         class="flex-1 text-center max-w-20 tracking-widest text-xs rounded-lg border border-(--border) p-2"
@@ -66,9 +39,9 @@ watch(otherPlayers, async () => {
       Wachten op spelers…
     </div>
     <PlayerList
-      :own="lobbyStore.currentSession.name"
-      :data="lobbyStore.players"
-      :max-players="lobbyStore.capacity"
+      :own="gameStore.you"
+      :data="gameStore.players"
+      :max-players="gameStore.capacity"
     ></PlayerList>
     <div
       v-if="counter"

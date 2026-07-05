@@ -22,9 +22,9 @@ def deterministic_code(app):
     app.dependency_overrides[get_random_code] = get_random_code_override
 
 
-def get_testgame_config():
+def get_testgame_config(size=2):
     return {
-        "size": 2,
+        "size": size,
         "creator": "player 1"
     }
 
@@ -58,7 +58,7 @@ def test_join_lobby(player_1: TestClient, player_2: TestClient):
 def test_creator_leaves_lobby_after_creation(player_1: TestClient, lobbies: dict[str, Lobby]):
     player_1.post("/lobbies", json=get_testgame_config())
     response = player_1.post("/lobbies/leave")
-    assert response.status_code == 204
+    assert response.status_code == 204, response.text
     assert lobbies == {}
     assert not player_1.cookies.get("sessionToken")
 
@@ -96,20 +96,21 @@ def test_player_2_joins_lobby(player_1: TestClient, player_2: TestClient):
 
 
 def test_player_joins_without_code(player_1):
-    assert player_1.post("/lobbies/join").status_code == 400
+    assert player_1.post("/lobbies/join").status_code == 422
 
 
 def test_player_joins_with_invalid_cookie(player_1: TestClient):
     token = generate_token("player 1", "ZZZZ")
     player_1.cookies.set('sessionToken', token, "testserver.local")
-    player_1.post("/lobbies/join", json={"username": "player 1"})
+    response = player_1.post("/lobbies/join", json={"username": "player 1"})
+    assert response.status_code == 422
     assert not player_1.cookies.get('sessionToken')
 
 
-def test_player_2_rejoins(player_1: TestClient, player_2: TestClient):
+def test_player_2_refetches_the_game(player_1: TestClient, player_2: TestClient):
     player_1.post("/lobbies", json=get_testgame_config())
     player_2.post("/lobbies/join?code=AAAA", json={"username": "player 2"})
-    assert player_2.post("/lobbies/join").json() == {
+    assert player_2.get("/lobbies/current").json() == {
         'capacity': 2,
         'creator': 'player 1',
         'id': 'AAAA',
@@ -118,6 +119,22 @@ def test_player_2_rejoins(player_1: TestClient, player_2: TestClient):
             'player 2',
         ],
         "you": "player 2"
+    }
+
+
+def test_cant_create_two_players(player_1: TestClient, player_2: TestClient):
+    player_1.post("/lobbies", json=get_testgame_config(size=4))
+    player_2.post("/lobbies/join?code=AAAA", json={"username": "player 2"})
+    player_2.post("/lobbies/join?code=AAAA", json={"username": "another one"})
+    assert player_2.get("/lobbies/current").json() == {
+        'capacity': 4,
+        'creator': 'player 1',
+        'id': 'AAAA',
+        'players': [
+            'player 1',
+            'another one',
+        ],
+        "you": "another one"
     }
 
 
@@ -155,6 +172,16 @@ def test_creating_two_lobbies_deletes_the_first_one(player_1: TestClient, lobbie
     player_1.post("/lobbies", json=get_testgame_config())
     player_1.post("/lobbies", json=get_testgame_config())
     assert list(lobbies.keys()) == ["AAAB"]
+
+
+def test_player_2_gets_in_lobby_of_query_param_instead_of_cookie(player_1: TestClient, player_2: TestClient):
+    player_1.post("/lobbies", json=get_testgame_config())
+    response = player_2.post(f"/lobbies/join?code=AAAA", json={"username": "player 2"})
+    print(response.text)
+    player_1.post("/lobbies", json=get_testgame_config())
+    response = player_2.post(f"/lobbies/join?code=AAAB", json={"username": "player 2"})
+
+    assert response.json()['id'] == "AAAB"
 
 
 def test_player_2_changes_name_in_lobby():
