@@ -1,4 +1,5 @@
 import typer
+import uvicorn
 
 
 app = typer.Typer()
@@ -12,6 +13,11 @@ def callback():
 @app.command("list")
 def list_lobbies():
     print("hello")
+
+
+@app.command("run")
+def run_server():
+    uvicorn.run("backend.main:app", port=8000, log_level="info", env_file=".env", reload=True)
 
 
 def main():

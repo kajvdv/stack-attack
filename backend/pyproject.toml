@@ -17,6 +17,9 @@ dependencies = [
   "httpx-ws>=0.9.0",
 ]
 
+[project.scripts]
+backend = "backend.cli:main"
+
 [tool.pytest.ini_options]
 log_cli = "False"
 log_cli_level = "INFO"
