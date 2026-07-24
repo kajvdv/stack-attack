@@ -1,7 +1,9 @@
+import { vi, describe } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import { test, expect } from '../setup'
+import { test, expect, delay } from '../setup'
 import { useGameStore } from '@/stores/game'
 import { HomeCard, NewGameCard, JoinCard, LobbyCard } from '@/components/menu'
+import LobbyPage from '@/pages/lobby.vue'
 import App from '@/App.vue'
 
 test('/home displays home screen', async ({ router }) => {
@@ -50,4 +52,22 @@ test('/lobby displays lobby screen', async ({ router }) => {
   expect(wrapper.findComponent(JoinCard).exists()).toBe(false)
   expect(wrapper.findComponent(NewGameCard).exists()).toBe(false)
   expect(wrapper.findComponent(HomeCard).exists()).toBe(false)
+})
+
+describe('Joining the game', () => {
+  test.only('Lobby page redirects to game page when lobby is full', async ({ router }) => {
+    const spy = vi.spyOn(router, 'push')
+    const wrapper = mount(LobbyPage)
+    const gameStore = useGameStore()
+    gameStore.lobby = {
+      id: 'AAAA',
+      players: ['player 1', 'player 2'],
+      capacity: 2,
+      you: 'player 1',
+    }
+
+    await flushPromises()
+
+    expect(spy).toHaveBeenCalledWith('/board')
+  })
 })

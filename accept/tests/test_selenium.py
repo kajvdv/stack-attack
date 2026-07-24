@@ -6,12 +6,12 @@ from accept.driver import Driver
 
 @pytest.fixture
 def player1():
-    return SeleniumDriver(9001)
+    return SeleniumDriver(9001, "user1")
 
 
 @pytest.fixture
 def player2():
-    return SeleniumDriver(9002)
+    return SeleniumDriver(9002, "user2")
 
 
 def test_(player1: Driver, player2: Driver):
@@ -25,4 +25,3 @@ def test_(player1: Driver, player2: Driver):
     player2.join_game(code, "player 2")
     player1.wait_for_game_to_start()
     
-    assert 0

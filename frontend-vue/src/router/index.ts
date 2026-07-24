@@ -14,7 +14,9 @@ const router = createRouter({
 export function initRouter(router: Router) {
   router.beforeEach(async (to, from) => {
     const gameStore = useGameStore()
-    if (to.path == '/lobby' && !gameStore.lobby) {
+    console.log(`['/lobby', '/board'].includes(${to.path}) && ${!gameStore.lobby}`)
+    if (['/lobby', '/board'].includes(to.path) && !gameStore.lobby) {
+      console.log('Fetchting current session')
       await gameStore.fetchCurrentSession()
     }
 
@@ -33,6 +35,7 @@ export function initRouter(router: Router) {
     if (to.path === '/join' && !to.query.code) {
       return '/'
     }
+    console.log('going to', to.fullPath, 'from', from.fullPath)
   })
 }
 

@@ -2,6 +2,7 @@ from time import sleep
 
 from httpx import Client
 from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -36,9 +37,13 @@ from bot.browser import connect, start_browser
 
 
 class SeleniumDriver(Driver):
-    def __init__(self, port) -> None:
+    def __init__(self, port: int, user: str) -> None:
         # self.http_driver = HttpDriver(Client(base_url="http://localhost:8000"))
         self.driver = connect(port)
+        # options = Options()
+        # options.add_argument(f'user-data-dir=data/{user}')
+        # self.driver = WebDriver(options)
+        self.driver.delete_all_cookies()
         self.driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
             'source': '''
                 window.prompt = function() { return "player 2"; };
@@ -66,13 +71,14 @@ class SeleniumDriver(Driver):
 
         # Click on create game button
         self.driver.find_element(value="create-game-btn").click()
-
+        sleep(1)
         # Fill config for game
         self.driver.find_element(value="username-input").send_keys("player 1")
         self.driver.find_element(value="player-count-input").send_keys("2")
 
         # Confirm creating game
         self.driver.find_element(value="confirm-game-btn").click()
+        sleep(1)
         code = self.driver.find_element(value='lobby-code-display').text
 
         return code
@@ -93,12 +99,14 @@ class SeleniumDriver(Driver):
         ).click()
 
         # Make sure the user sees the same code
+        sleep(1)
         assert self.driver.find_element(value='lobby-code-display').text == code
 
     def wait_for_game_to_start(self) -> None:
         # Should be on lobby page
         element = WebDriverWait(self.driver, 2).until(
-            EC.visibility_of_element_located((By.ID, "player-item-2"))
+            lambda driver: "board" in self.driver.current_url
+            # EC.visibility_of_element_located((By.ID, "player-item-2"))
         )
         # self.driver.find_element(value='player-item-2')
 

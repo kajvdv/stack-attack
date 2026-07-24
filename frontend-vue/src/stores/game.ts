@@ -14,26 +14,24 @@ export const useGameStore = defineStore('game', () => {
     throw new Error('You should first call connect().')
   }
 
-  function _connect() {
-    api.lobby
-      .connect(async (receivedGame: object) => {
-        game.value = receivedGame as Game
-        const otherPlayers = Object.keys(game.value.otherPlayers)
-        console.log(otherPlayers)
-        console.log(lobby.value?.players)
-        if (
-          !lobby.value ||
-          !otherPlayers.every((player) => lobby.value?.players.includes(player))
-        ) {
-          await fetchCurrentSession()
-        }
-      })
-      .then((value) => (send = value))
+  async function _connect() {
+    const value = await api.lobby.connect(async (receivedGame: object) => {
+      game.value = receivedGame as Game
+      const otherPlayers = Object.keys(game.value.otherPlayers)
+      console.log('New game received')
+      console.log(otherPlayers)
+      console.log(lobby.value?.players)
+      if (!lobby.value || !otherPlayers.every((player) => lobby.value?.players.includes(player))) {
+        console.log('Fetching current session')
+        await fetchCurrentSession()
+      }
+    })
+    send = value
   }
 
-  function connect() {
+  async function connect() {
     if (lobby.value) {
-      _connect()
+      await _connect()
     } else {
       throw new Error('First call /lobbies/join with a username.')
     }
@@ -74,11 +72,17 @@ export const useGameStore = defineStore('game', () => {
   const message = computed(() => game.value?.message ?? '')
   const lobbyCode = computed(() => lobby.value?.id ?? '')
 
-  watch(players, async () => {
-    if (lobby.value && lobby.value.players.length === lobby.value.capacity) {
-      await router.replace('/board')
-    }
-  })
+  // watch(players, async () => {
+  //   console.log('players changed', players.value)
+  //   console.log(
+  //     'lobby.value && players.value.length === lobby.value.capacity =',
+  //     lobby.value && players.value.length === lobby.value.capacity,
+  //   )
+  //   if (lobby.value && players.value.length === lobby.value.capacity) {
+  //     console.log('going to /board')
+  //     await router.replace('/board')
+  //   }
+  // })
 
   return {
     connect,
