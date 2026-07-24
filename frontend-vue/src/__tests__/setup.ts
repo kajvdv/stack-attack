@@ -9,6 +9,35 @@ import { createApi } from '@/plugins/client'
 import { initRouter } from '@/router'
 import * as api from '@/api'
 
+export const LOBBY = {
+  id: 'AAAA',
+  players: ['player 1'],
+  capacity: 2,
+  you: 'player 1',
+}
+
+export const GAME = {
+  topcard: {
+    suit: 'hearts',
+    value: '2',
+  },
+  previous_topcard: null,
+  can_draw: true,
+  choose_suit: false,
+  draw_count: 0,
+  current_player: 'player 1',
+  otherPlayers: {
+    'player 2': 2,
+  },
+  hand: [
+    {
+      suit: 'hearts',
+      value: '2',
+    },
+  ],
+  message: 'player 1 joined the game',
+}
+
 vi.mock('@/api')
 
 export const test = base

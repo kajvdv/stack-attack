@@ -9,6 +9,7 @@ import VueRouter from 'vue-router/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [VueRouter(), vue(), vueDevTools(), tailwindcss()],
+  base: 'http://localhost:8000',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

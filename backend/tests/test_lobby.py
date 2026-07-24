@@ -225,3 +225,7 @@ def test_player_1_receives_message_after_player_2_connect(player_1: TestClient, 
         game = conn_1.receive_json()
 
     assert game['message'] == "player 2 joined the game"
+
+
+# Lobby is full error
+# Check lobby exists (Client should check lobby before player can choose name)

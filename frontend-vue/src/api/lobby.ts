@@ -12,7 +12,7 @@ export async function createLobby({ creator, size }: LobbyCreate): Promise<Lobby
   return await response.json()
 }
 
-export async function join(code?: string, username?: string): Promise<LobbyResponse> {
+export async function join(code: string, username: string): Promise<LobbyResponse> {
   const url = '/api/lobbies/join' + (code ? `?code=${code}` : '')
   const response = await fetch(url, {
     method: 'post',

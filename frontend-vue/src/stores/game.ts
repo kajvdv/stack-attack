@@ -52,13 +52,11 @@ export const useGameStore = defineStore('game', () => {
   async function create(size: number, creator: string) {
     const result = await api.lobby.createLobby({ creator, size })
     lobby.value = result
-    await router.push('/lobby')
   }
 
-  async function join(code?: string, username?: string) {
+  async function join(code: string, username: string) {
     const result = await api.lobby.join(code, username)
     lobby.value = result
-    await router.push(`/lobby`)
   }
 
   async function fetchCurrentSession() {
@@ -67,10 +65,14 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const players = computed(() => lobby.value?.players ?? [])
-  const code = computed(() => lobby.value?.id ?? '')
   const you = computed(() => lobby.value?.you ?? '')
   const capacity = computed(() => lobby.value?.capacity ?? 0)
   const session = computed(() => api.lobby.getCurrentSession())
+  const canDraw = computed(() => game.value?.can_draw ?? false)
+  const topcard = computed(() => game.value?.topcard ?? {})
+  const currentPlayer = computed(() => game.value?.current_player ?? '')
+  const message = computed(() => game.value?.message ?? '')
+  const lobbyCode = computed(() => lobby.value?.id ?? '')
 
   watch(players, async () => {
     if (lobby.value && lobby.value.players.length === lobby.value.capacity) {
@@ -88,9 +90,14 @@ export const useGameStore = defineStore('game', () => {
     game,
     lobby,
     players,
-    code,
+    topcard,
+    canDraw,
+    currentPlayer,
+    message,
+    // code,
     you,
     capacity,
     session,
+    lobbyCode,
   }
 })

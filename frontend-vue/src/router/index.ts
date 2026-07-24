@@ -17,6 +17,11 @@ export function initRouter(router: Router) {
     if (to.path == '/lobby' && !gameStore.lobby) {
       await gameStore.fetchCurrentSession()
     }
+
+    if (to.path === '/board' && !gameStore.lobby) {
+      return '/'
+    }
+
     if (to.path === '/lobby' && !gameStore.lobby && !to.query.code) {
       return '/'
     }

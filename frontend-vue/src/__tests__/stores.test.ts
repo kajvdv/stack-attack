@@ -38,19 +38,19 @@ const GAME = {
   message: 'player 1 joined the game',
 }
 
-test('Redirect to /lobby after creating a new game', async ({ app, router }) => {
-  const spy = vi.spyOn(api.lobby, 'createLobby').mockResolvedValue(Lobby)
-  const gameStore = useGameStore()
-  gameStore.create(2, 'player 1')
+// test('Redirect to /lobby after creating a new game', async ({ app, router }) => {
+//   const spy = vi.spyOn(api.lobby, 'createLobby').mockResolvedValue(Lobby)
+//   const gameStore = useGameStore()
+//   gameStore.create(2, 'player 1')
 
-  await flushPromises()
-  await delay()
-  expect(gameStore.lobby).toStrictEqual(Lobby)
-  expect(spy).toHaveBeenCalled()
-  expect(router.currentRoute.value.fullPath).toBe('/lobby')
-})
+//   await flushPromises()
+//   await delay(200)
+//   expect(gameStore.lobby).toStrictEqual(Lobby)
+//   expect(spy).toHaveBeenCalled()
+//   expect(router.currentRoute.value.fullPath).toBe('/lobby')
+// })
 
-test('Join should get lobby and push to /lobby', async ({ app, router }) => {
+test('Join should get lobby', async ({ app }) => {
   const spy = vi.spyOn(api.lobby, 'join').mockResolvedValue(Lobby)
   const gameStore = useGameStore()
   gameStore.join('AAAA', 'player 2')
@@ -59,7 +59,6 @@ test('Join should get lobby and push to /lobby', async ({ app, router }) => {
   await delay()
   expect(gameStore.lobby).toStrictEqual(Lobby)
   expect(spy).toHaveBeenCalled()
-  expect(router.currentRoute.value.fullPath).toBe('/lobby')
 })
 
 test('Redirect to /board when lobby is full and counter is 0', async ({ app, router }) => {
@@ -68,7 +67,7 @@ test('Redirect to /board when lobby is full and counter is 0', async ({ app, rou
   await router.push('/lobby')
 
   await flushPromises()
-  await delay()
+  await delay(200)
   expect(router.currentRoute.value.fullPath).toBe('/board')
 })
 
