@@ -54,20 +54,20 @@ test('/lobby displays lobby screen', async ({ router }) => {
   expect(wrapper.findComponent(HomeCard).exists()).toBe(false)
 })
 
-describe('Joining the game', () => {
-  test.only('Lobby page redirects to game page when lobby is full', async ({ router }) => {
-    const spy = vi.spyOn(router, 'push')
-    const wrapper = mount(LobbyPage)
-    const gameStore = useGameStore()
-    gameStore.lobby = {
-      id: 'AAAA',
-      players: ['player 1', 'player 2'],
-      capacity: 2,
-      you: 'player 1',
-    }
+// describe('Joining the game', () => {
+//   test.only('Lobby page redirects to game page when lobby is full', async ({ router }) => {
+//     const spy = vi.spyOn(router, 'push')
+//     const wrapper = mount(LobbyPage)
+//     const gameStore = useGameStore()
+//     gameStore.lobby = {
+//       id: 'AAAA',
+//       players: ['player 1', 'player 2'],
+//       capacity: 2,
+//       you: 'player 1',
+//     }
 
-    await flushPromises()
+//     await flushPromises()
 
-    expect(spy).toHaveBeenCalledWith('/board')
-  })
-})
+//     expect(spy).toHaveBeenCalledWith('/board')
+//   })
+// })

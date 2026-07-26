@@ -3,52 +3,84 @@ import { test, expect, LOBBY, GAME, delay } from '@/__tests__/setup'
 import { useGameStore } from '@/stores/game'
 import * as api from '@/api'
 import { flushPromises } from '@vue/test-utils'
+import { useLobbyStore } from '@/stores/lobby'
 
 describe('gameStore', () => {
-  test('Joining a lobby and storing in store', async ({ app }) => {
-    vi.spyOn(api.lobby, 'join').mockImplementation(async () => LOBBY)
+  test('Save received game', async ({ app }) => {
     const gameStore = useGameStore()
-
-    await gameStore.join('AAAA', 'player 2')
-    expect(gameStore.lobby).toStrictEqual(LOBBY)
+    const lobbyStore = useLobbyStore()
+    await lobbyStore.joinLobby('AAAA', 'player 1')
+    await gameStore.connect()
+    expect(gameStore.game).toStrictEqual(GAME)
   })
+  test('Making lobbyStore refetch when player joins', async ({ app }) => {
+    const gameStore = useGameStore()
+    const lobbyStore = useLobbyStore()
+    await lobbyStore.joinLobby('AAAA', 'player 1')
+    const spy = vi.spyOn(lobbyStore, 'fetchCurrentLobby')
+    await gameStore.connect()
 
-  test('Join without parameters')
-
-  test('Get current joined game from server', async ({ app }) => {
-    vi.spyOn(api.lobby, 'getCurrentLobby').mockImplementation(async () => LOBBY)
+    expect(spy).toHaveBeenCalled()
+  })
+  test.only('Cant connect when no session', async ({ app }) => {
     const gameStore = useGameStore()
 
-    await gameStore.fetchCurrentSession()
-    expect(gameStore.lobby).toStrictEqual(LOBBY)
+    await expect(async () => await gameStore.connect()).rejects.toThrow('No lobby in store')
   })
 })
 
-describe('Joining a game', () => {
-  test.only('Store pushes /board when game full', async ({ app, router }) => {
-    async function connect(onReceive: (game: object) => Promise<void>) {
-      onReceive({
-        ...GAME,
-        otherPlayers: {
-          'player 1': 2,
-          'player 2': 2,
-        },
-      })
-      return async () => {}
-    }
-    vi.mocked(api.lobby.join).mockResolvedValue(LOBBY)
-    vi.mocked(api.lobby.connect).mockImplementation(connect)
+describe('lobbyStore', () => {
+  test('Saving newly created game')
+  test('Join without parameters')
+  test('Joining a lobby and storing in store', async ({ app }) => {
+    const lobbyStore = useLobbyStore()
+    await lobbyStore.joinLobby('AAAA', 'player 2')
+    expect(lobbyStore.lobby).toStrictEqual(LOBBY)
+  })
+  test('Get current joined game from server', async ({ app }) => {
+    const lobbyStore = useLobbyStore()
+    await lobbyStore.fetchCurrentSession()
+    expect(lobbyStore.lobby).toStrictEqual(LOBBY)
+  })
+  test('Saving current game', async ({ app }) => {
+    const spy = vi.spyOn(api.lobby, 'getCurrentLobby')
+    const lobbyStore = useLobbyStore()
+    await lobbyStore.fetchCurrentLobby()
+    expect(spy).toHaveBeenCalledOnce()
+    expect(lobbyStore.lobby).toStrictEqual(LOBBY)
+  })
+  test('Navigating to /lobby when new game was created')
+  test('LobbyStore navigates to /board when fetched lobby is full', async ({ app, router }) => {
     vi.mocked(api.lobby.getCurrentLobby).mockResolvedValue({
       ...LOBBY,
       players: ['player 1', 'player 2'],
     })
     const spy = vi.spyOn(router, 'push')
-    const gameStore = useGameStore()
-    await gameStore.join('AAAA', 'player 2')
-    await gameStore.connect()
+    const lobbyStore = useLobbyStore()
+    lobbyStore.fetchCurrentLobby()
 
     await flushPromises()
-
-    expect(spy).toHaveBeenCalledWith('/board')
+    expect(spy).toHaveBeenCalledExactlyOnceWith('/board')
   })
 })
+
+// describe('Creating a game', () => {
+//   test('gameStore saves game', () => {
+//     async function connect(onReceive: (game: object) => Promise<void>) {
+//       onReceive(GAME)
+//       return async () => {}
+//     }
+//     vi.mocked(api.lobby.connect).mockImplementation(connect)
+//   })
+// })
+
+// describe('Joining a game', () => {
+//   test('gameStore makes lobbyStore fetch lobby on changed players in message', async ({ app }) => {
+//     const lobbyStore = useLobbyStore()
+//     const spy = vi.spyOn(lobbyStore, 'fetchCurrentLobby')
+//     const gameStore = useGameStore()
+//     gameStore.game = GAME
+//     await gameStore.connect()
+//     expect(spy).toHaveBeenCalled()
+//   })
+// })

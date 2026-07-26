@@ -8,6 +8,8 @@ import { createApp } from 'vue'
 import { createApi } from '@/plugins/client'
 import { initRouter } from '@/router'
 import * as api from '@/api'
+import type { Api } from '@/types/api'
+import type { LobbyResponse } from '@/types/lobby'
 
 export const LOBBY = {
   id: 'AAAA',
@@ -38,7 +40,20 @@ export const GAME = {
   message: 'player 1 joined the game',
 }
 
-vi.mock('@/api')
+vi.mock(import('@/api'), (): Api => {
+  return {
+    lobby: {
+      async connect(onReceive: (game: object) => Promise<void>) {
+        onReceive(GAME)
+        return async () => {}
+      },
+      async join() {
+        return LOBBY
+      },
+      getCurrentLobby: vi.fn<() => Promise<LobbyResponse>>(async () => LOBBY),
+    },
+  }
+})
 
 export const test = base
   .extend('pinia', async () => {

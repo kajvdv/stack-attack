@@ -1,9 +1,10 @@
 import { vi, describe } from 'vitest'
-import { test, expect } from '@/__tests__/setup'
+import { test, expect, LOBBY } from '@/__tests__/setup'
 import { flushPromises, mount } from '@vue/test-utils'
 import { HomeCard, NewGameCard, JoinCard, LobbyCard } from '@/components/menu'
 import { useGameStore } from '@/stores/game'
 import { mockedStore } from '../mockedStore'
+import { useLobbyStore } from '@/stores/lobby'
 
 describe('HomeCard', () => {
   test('HomeCard displays right elements', async () => {
@@ -99,3 +100,15 @@ describe('LobbyCard', () => {
     expect(wrapper.find('#lobby-code-display').text()).toBe('AAAA')
   })
 })
+
+// describe('Joining a game', () => {
+//   test.only('LobbyCard should call router with /board when lobby is full', async ({ router }) => {
+//     const wrapper = mount(LobbyCard)
+//     const spy = vi.spyOn(router, 'push')
+//     const lobbyStore = mockedStore(useLobbyStore)
+//     lobbyStore.lobby = { ...LOBBY, players: ['player 1', 'player 2'] }
+
+//     await flushPromises()
+//     expect(spy).toHaveBeenCalledWith('/board')
+//   })
+// })
