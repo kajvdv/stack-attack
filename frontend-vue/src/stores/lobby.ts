@@ -1,30 +1,51 @@
 import { ref, computed, watch } from 'vue'
-import { defineStore, storeToRefs } from 'pinia'
+import { defineStore } from 'pinia'
 import type { LobbyCreate, LobbyResponse } from '@/types/lobby'
 import { useApi } from '@/plugins/client'
+import { useRouter } from 'vue-router'
 
 export const useLobbyStore = defineStore('lobby', () => {
   const lobby = ref<LobbyResponse | null>(null)
   const api = useApi()
-  async function create(config: LobbyCreate) {
+  const router = useRouter()
+
+  async function fetchCurrentLobby() {
+    const data = await api.lobby.getCurrentLobby()
+    lobby.value = data
+    if (data.players.length == data.capacity) {
+      console.log('pushing board')
+      router.push('/board')
+    }
+  }
+
+  async function createLobby(config: LobbyCreate) {
     const response: LobbyResponse = await api.lobby.createLobby(config)
     lobby.value = response
   }
 
-  function joinLobby(username?: string) {}
+  async function joinLobby(code: string, username: string) {
+    const result = await api.lobby.join(code, username)
+    lobby.value = result
+  }
 
-  const currentSession = computed(() => {
-    const token = api.lobby.getSessionToken()
-    if (!token) {
-      return { name: '', lobby: '' }
-    }
-    const parts = token.split('.')
-    const { sub: name, lobby, exp } = JSON.parse(atob(parts.at(1) ?? ''))
-    return { name, lobby }
-  })
+  async function fetchCurrentSession() {
+    const result = await api.lobby.getCurrentLobby()
+    lobby.value = result
+  }
 
   const players = computed<string[]>(() => lobby.value?.players ?? [])
+  const you = computed<string>(() => lobby.value?.you ?? '')
   const code = computed<string>(() => lobby.value?.id ?? '')
   const capacity = computed(() => lobby.value?.capacity ?? 0)
-  return { players, code, currentSession, create, joinLobby, capacity, lobby }
+  return {
+    players,
+    you,
+    code,
+    fetchCurrentSession,
+    createLobby,
+    joinLobby,
+    capacity,
+    lobby,
+    fetchCurrentLobby,
+  }
 })

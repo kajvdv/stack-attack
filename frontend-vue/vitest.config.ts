@@ -12,6 +12,7 @@ export default mergeConfig(
       silent: 'passed-only',
       globals: true,
       restoreMocks: true,
+      mockReset: true,
     },
   }),
 )

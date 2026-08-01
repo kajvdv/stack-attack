@@ -13,6 +13,7 @@ const router = useRouter()
 const counter = ref<number | null>(null)
 
 const gameStore = useGameStore()
+const lobbyStore = useLobbyStore()
 gameStore.connect()
 
 let username = null
@@ -25,7 +26,7 @@ let username = null
         id="lobby-code-display"
         class="font-title text-3xl font-black tracking-widest text-(--ink)"
       >
-        {{ gameStore.lobbyCode }}
+        {{ lobbyStore.code }}
       </div>
       <div
         class="flex-1 text-center max-w-20 tracking-widest text-xs rounded-lg border border-(--border) p-2"
@@ -39,9 +40,9 @@ let username = null
       Wachten op spelers…
     </div>
     <PlayerList
-      :own="gameStore.you"
-      :data="gameStore.players"
-      :max-players="gameStore.capacity"
+      :own="lobbyStore.you"
+      :data="lobbyStore.players"
+      :max-players="lobbyStore.capacity"
     ></PlayerList>
     <div
       v-if="counter"

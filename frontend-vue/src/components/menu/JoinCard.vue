@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { useGameStore } from '@/stores/game'
+import { useLobbyStore } from '@/stores/lobby'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-const gameStore = useGameStore()
+const lobbyStore = useLobbyStore()
 const route = useRoute()
 const router = useRouter()
 
 const username = ref('')
 
 async function join() {
-  await gameStore.join(route.query.code as string, username.value)
+  await lobbyStore.joinLobby(route.query.code as string, username.value)
   await router.push(`/lobby`)
 }
 </script>
