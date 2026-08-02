@@ -9,7 +9,7 @@ export default mergeConfig(
       environment: 'jsdom',
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
-      silent: 'passed-only',
+      // silent: 'passed-only',
       globals: true,
       restoreMocks: true,
       mockReset: true,

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { PlayingCard, Hand } from '@/components/board'
 import { useGameStore } from '@/stores/game'
+import { useLobbyStore } from '@/stores/lobby'
 import type { Card } from '@/types/board'
 import { computed } from 'vue'
 
 const gameStore = useGameStore()
+const lobbyStore = useLobbyStore()
 
 gameStore.connect()
 
@@ -17,7 +19,7 @@ const otherCards = computed(() => {
   return otherCards
 })
 
-const playerIndex = computed(() => gameStore.players.indexOf(gameStore.currentPlayer))
+const playerIndex = computed(() => lobbyStore.players.indexOf(gameStore.currentPlayer))
 </script>
 
 <template>
