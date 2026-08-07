@@ -17,6 +17,12 @@ export const useGameStore = defineStore('game', () => {
 
   async function connect() {
     send = await api.lobby.connect(async (receivedGame: Game) => {
+      if (receivedGame.error) {
+        if (game.value) {
+          game.value.message = receivedGame.error
+        }
+        return
+      }
       if (!lobbyStore.lobby) {
         throw new Error('No lobby in store')
       }

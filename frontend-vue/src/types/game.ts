@@ -7,4 +7,5 @@ export interface Game {
   current_player: string
   otherPlayers: Record<string, number>
   message: string
+  error?: string
 }
