@@ -24,4 +24,10 @@ def test_(player1: Driver, player2: Driver):
 
     player2.join_game(code, "player 2")
     player1.wait_for_game_to_start()
-    
+
+    for _ in range(50):
+        player1.play_turn()
+        player2.play_turn()
+
+    assert 0
+    # player1.play_turn()

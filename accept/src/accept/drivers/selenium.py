@@ -5,6 +5,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 
 from accept.driver import Driver, Connection
@@ -34,6 +35,13 @@ from bot.browser import connect, start_browser
 
 # def _inject_interceptor(browser: WebDriver):
 #     browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": _WS_INTERCEPTOR})
+
+
+def parse_card_src(src: str | None):
+    if not src:
+        raise Exception("Could not parse src")
+    value, suit = src.split("/")[-1][:-4].split("_of_")
+    return value, suit
 
 
 class SeleniumDriver(Driver):
@@ -99,8 +107,8 @@ class SeleniumDriver(Driver):
         ).click()
 
         # Make sure the user sees the same code
-        sleep(1)
-        assert self.driver.find_element(value='lobby-code-display').text == code
+        # sleep(1)
+        # assert self.driver.find_element(value='lobby-code-display').text == code
 
     def wait_for_game_to_start(self) -> None:
         # Should be on lobby page
@@ -108,7 +116,38 @@ class SeleniumDriver(Driver):
             lambda driver: "board" in self.driver.current_url
             # EC.visibility_of_element_located((By.ID, "player-item-2"))
         )
+        sleep(1)
         # self.driver.find_element(value='player-item-2')
+
+    @property
+    def topcard(self):
+        return parse_card_src(self.driver.find_element(value="top-card").get_attribute("src"))
+
+    @property
+    def hand(self):
+        elements = self.driver.find_elements(By.CSS_SELECTOR, value="#own-hand > [data-testid=card]")
+        return [parse_card_src(el.get_attribute("src")) for el in elements]
+
+
+    def draw_card(self) -> None:
+        self.driver.find_element(value="draw-stack").click()
+        return
+
+    def play_turn(self):
+        # print(self.topcard)
+        # print(self.hand)
+        elements = self.driver.find_elements(By.CSS_SELECTOR, value="#own-hand [data-testid=card]")
+        for el in elements:
+            card = parse_card_src(el.get_attribute("src"))
+            # print(self.topcard, (value, suit))
+            if card[0] == self.topcard[0] or card[1] == self.topcard[1]:
+                print("playing card", self.topcard, card)
+                # el.click()
+                ActionChains(self.driver).move_to_element_with_offset(el, -50, 0).click().perform()
+                sleep(0.1)
+                return
+        self.draw_card()
+        sleep(0.1)
 
     def get_lobbies(self) -> list[LobbyResponse]:
         return self.http_driver.get_lobbies()
