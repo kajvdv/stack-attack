@@ -3,19 +3,30 @@ import { Card } from '@/components/card'
 import { PlayerList } from '@/components/lobby'
 import { useGameStore } from '@/stores/game'
 import { useLobbyStore } from '@/stores/lobby'
-import { storeToRefs } from 'pinia'
-import { watch, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
-const route = useRoute()
 const router = useRouter()
-
-const counter = ref<number | null>(null)
-
+const lobbyStore = useLobbyStore()
 const gameStore = useGameStore()
 gameStore.connect()
 
-let username = null
+watch(
+  () => lobbyStore.players,
+  async () => {
+    console.log('watch active')
+    if (lobbyStore.players.length === lobbyStore.capacity) {
+      await router.push('/board')
+    }
+  },
+)
+
+onMounted(async () => {
+  if (lobbyStore.players.length === lobbyStore.capacity) {
+    // setTimeout(async () => await router.push('/board'), 2000)
+    await router.push('/board')
+  }
+})
 </script>
 
 <template>
@@ -25,7 +36,7 @@ let username = null
         id="lobby-code-display"
         class="font-title text-3xl font-black tracking-widest text-(--ink)"
       >
-        {{ gameStore.code }}
+        {{ lobbyStore.code }}
       </div>
       <div
         class="flex-1 text-center max-w-20 tracking-widest text-xs rounded-lg border border-(--border) p-2"
@@ -39,19 +50,9 @@ let username = null
       Wachten op spelers…
     </div>
     <PlayerList
-      :own="gameStore.you"
-      :data="gameStore.players"
-      :max-players="gameStore.capacity"
+      :own="lobbyStore.you"
+      :data="lobbyStore.players"
+      :max-players="lobbyStore.capacity"
     ></PlayerList>
-    <div
-      v-if="counter"
-      class="text-xs text-(--ink-dim) text-center tracking-widest italic pt-2.5 pb-1"
-    >
-      Het spel begint over {{ counter }} seconden
-    </div>
-    <div v-else class="text-xs text-(--ink-dim) text-center tracking-widest italic pt-2.5 pb-1">
-      Even gedult…<br />
-      Het spel begint zodra de lobby vol is.
-    </div>
   </Card>
 </template>

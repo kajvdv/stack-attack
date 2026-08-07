@@ -6,15 +6,16 @@ import { useLobbyStore } from '@/stores/lobby'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+// const gameStore = useGameStore()
 const lobbyStore = useLobbyStore()
-const gameStore = useGameStore()
 const router = useRouter()
 
 const username = ref('')
 const size = ref(4)
 
 async function createLobby() {
-  await gameStore.create(size.value, username.value)
+  await lobbyStore.createLobby({ size: size.value, creator: username.value })
+  await router.push('/lobby')
 }
 </script>
 

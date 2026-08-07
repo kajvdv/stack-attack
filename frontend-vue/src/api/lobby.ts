@@ -1,4 +1,5 @@
 import type { Session } from '@/types/api'
+import type { Game } from '@/types/game'
 import type { LobbyCreate, LobbyResponse } from '@/types/lobby'
 
 export async function createLobby({ creator, size }: LobbyCreate): Promise<LobbyResponse> {
@@ -53,7 +54,7 @@ export function getCurrentSession(): Session | null {
 }
 
 export async function connect(
-  onReceive: (game: object) => Promise<void>,
+  onReceive: (game: Game) => Promise<void>,
 ): Promise<(msg: string) => Promise<void>> {
   // const response = await fetch('/api/lobbies/current', {
   //   headers: {

@@ -2,6 +2,7 @@ import createLobbyResponse from '@/../data/lobby_response.json'
 import sessionToken from '@/../data/player-RRXJ.txt?raw'
 import joinMessage from '@/../data/join_message.json'
 import type { Session } from '@/types/api'
+import type { Game } from '@/types/game'
 
 let session = true
 let token = ''
@@ -40,7 +41,7 @@ export const lobby = {
       return null
     }
   },
-  async connect(onReceive: (game: object) => Promise<void>) {
+  async connect(onReceive: (game: Game) => Promise<void>) {
     this.sendMessage = onReceive
     // onReceive(joinMessage) // backend calling its send method
     return async (msg: string) => {
