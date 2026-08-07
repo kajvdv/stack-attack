@@ -16,9 +16,13 @@ export const useGameStore = defineStore('game', () => {
   }
 
   async function connect() {
-    send = await api.lobby.connect(async (receivedGame: object) => {
+    send = await api.lobby.connect(async (receivedGame: Game) => {
       if (!lobbyStore.lobby) {
         throw new Error('No lobby in store')
+      }
+      if (receivedGame.message.includes('has won the game!')) {
+        await router.push('/')
+        return
       }
       if (receivedGame.topcard) {
         game.value = receivedGame as Game

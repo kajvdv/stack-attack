@@ -207,3 +207,16 @@ test('Testing game interactions', async () => {
 
   expect(player1.find('#top-card').attributes().src).toBe('/cards/jack_of_hearts.png')
 })
+
+test('Auto redirect on win message', async () => {
+  const { createClient, lobbies, sendMessage } = createBackend()
+  const client = createClient()
+  const router = createTheRouter()
+  const player1 = await createUser(createClient(), router)
+  client.lobby.createLobby({ size: 2, creator: 'player 1' })
+  await router.push('/board')
+  sendMessage('player 1', { ...GAME, message: 'player 1 has won the game!' })
+  await flushPromises()
+  // console.log(player1.html())
+  expect(router.currentRoute.value.fullPath).toBe('/')
+})

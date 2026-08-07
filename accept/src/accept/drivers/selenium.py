@@ -136,13 +136,12 @@ class SeleniumDriver(Driver):
     def play_turn(self):
         # print(self.topcard)
         # print(self.hand)
-        elements = self.driver.find_elements(By.CSS_SELECTOR, value="#own-hand [data-testid=card]")
+        topcard = self.topcard
+        elements = self.driver.find_elements(By.CSS_SELECTOR, value="#own-hand > [data-testid=card]")
         for el in elements:
             card = parse_card_src(el.get_attribute("src"))
             # print(self.topcard, (value, suit))
-            if card[0] == self.topcard[0] or card[1] == self.topcard[1]:
-                print("playing card", self.topcard, card)
-                # el.click()
+            if card[0] == topcard[0] or card[1] == topcard[1]:
                 ActionChains(self.driver).move_to_element_with_offset(el, -50, 0).click().perform()
                 sleep(0.1)
                 return

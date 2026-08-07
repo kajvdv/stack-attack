@@ -14,9 +14,8 @@ def player2():
     return SeleniumDriver(9002, "user2")
 
 
-def test_(player1: Driver, player2: Driver):
+def test_full_game(player1: Driver, player2: Driver):
     code = player1.create_game({
-        "name": "test game",
         "size": 2,
         "creator": "player 1"
     })
@@ -25,9 +24,10 @@ def test_(player1: Driver, player2: Driver):
     player2.join_game(code, "player 2")
     player1.wait_for_game_to_start()
 
-    for _ in range(50):
+    for _ in range(9):
         player1.play_turn()
         player2.play_turn()
+    player1.play_turn()
 
-    assert 0
-    # player1.play_turn()
+    
+

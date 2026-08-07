@@ -13,7 +13,7 @@ console.log(current)
 </script>
 
 <template>
-  <div class="flex flex-row justify-center max-w-fit m-auto" data-testid="hand" id="own-hand">
+  <div class="flex flex-row justify-center max-w-fit m-auto" data-testid="hand">
     <div v-if="current" id="player-indicator"></div>
     <PlayingCard
       @click="gameStore.play(index)"
