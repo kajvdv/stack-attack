@@ -20,9 +20,14 @@ export const useGameStore = defineStore('game', () => {
       if (!lobbyStore.lobby) {
         throw new Error('No lobby in store')
       }
-      game.value = receivedGame as Game
-      const otherPlayers = Object.keys(game.value.otherPlayers)
-      lobbyStore.fetchCurrentLobby()
+      if (receivedGame.topcard) {
+        game.value = receivedGame as Game
+        const otherPlayers = Object.keys(game.value.otherPlayers)
+        lobbyStore.fetchCurrentLobby()
+      } else {
+        console.log(receivedGame.error)
+        game.value.message = receivedGame.error
+      }
     })
   }
 

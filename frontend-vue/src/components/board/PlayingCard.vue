@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import type { Card } from '@/types/board';
+import { computed } from 'vue';
 
 const {suit = "", value = ""} = defineProps<Card>()
 
-let src = "/cards/back.png"
-if (suit && value) {
-  src =  `/cards/${value}_of_${suit}.png`
-}
+  const src = computed(() => {
+    let imageSrc = "/cards/back.png"
+    if (suit && value) {
+      imageSrc =  `/cards/${value}_of_${suit}.png`
+    }
+    return imageSrc
+})
 </script>
 
 <template>

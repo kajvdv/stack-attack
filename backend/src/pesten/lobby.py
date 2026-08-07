@@ -148,7 +148,10 @@ class Lobby:
                 "message": message
             })
             logger.debug(f"Updating {self.players[self.game.current_player].name}'s board")
-            await send_coro
+            try:
+                await send_coro
+            except RuntimeError as e:
+                print(e)
 
     def get_player_by_name(self, name: str) -> Player:
         try:
