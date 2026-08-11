@@ -1,12 +1,14 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, test } from 'vitest'
 import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 import { createApi } from '@/plugins/client'
-import type { Api } from '@/types/api'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { initRouter } from '@/router'
 import { routes } from 'vue-router/auto-routes'
 import App from '@/App.vue'
+import { useGameStore } from '@/stores/game'
+import { useLobbyStore } from '@/stores/lobby'
 
 const delay = (t: number = 100) => new Promise((resolve) => setTimeout(resolve, t))
 
@@ -77,10 +79,12 @@ function createBackend() {
     return client
   }
 
-  const sendMessage = (username: string, msg: object) => {
-    connections.forEach((conn) => {
-      conn(msg)
-    })
+  const sendMessage = async (username: string, msg: object) => {
+    await Promise.all(
+      connections.map(async (conn) => {
+        return conn(msg)
+      }),
+    )
   }
   return { createClient, lobbies, sendMessage }
 }
@@ -219,4 +223,32 @@ test('Auto redirect on win message', async () => {
   await flushPromises()
   // console.log(player1.html())
   expect(router.currentRoute.value.fullPath).toBe('/')
+})
+
+test.only('gameStore handles receiving message from server', async () => {
+  const { createClient, lobbies, sendMessage } = createBackend()
+  const client = createClient()
+
+  const app = createApp({
+    setup() {
+      // suppress missing template warning
+      return () => {}
+    },
+  })
+  app.use(createPinia())
+  app.use(createTheRouter())
+  app.use(createApi(client))
+
+  const gameStore = useGameStore()
+  const lobbyStore = useLobbyStore()
+  await lobbyStore.createLobby({ size: 2, creator: 'player' })
+  await gameStore.connect()
+  await sendMessage('player', { error: 'An error' })
+  await flushPromises()
+
+  expect(gameStore.topcard).toStrictEqual({
+    suit: 'hearts',
+    value: '2',
+  })
+  expect(gameStore.message).toBe('An error')
 })
